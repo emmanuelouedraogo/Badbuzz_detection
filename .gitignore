@@ -1,0 +1,41 @@
+git # Python
+###################
+# Byte-compiled / optimized / C extensions
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# Virtual Environments
+###################
+badbuzzenv
+venv/
+env/
+.venv/
+.env/
+
+# IDE & Editor Config
+###################
+.vscode/
+.idea/
+
+# OS generated files
+###################
+.DS_Store
+Thumbs.db
+
+# Streamlit credentials/config
+###################
+.streamlit/
+
+#modèle
+saved_model/best_gensim_bidirectional_gru_en_model.keras
+tokenizer.pickle
+
