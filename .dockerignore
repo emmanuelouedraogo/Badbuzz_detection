@@ -1,0 +1,37 @@
+# Git
+.git
+.gitignore
+
+# Docker files
+Dockerfile
+*.Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Python virtual environment
+badbuzzenv/
+venv/
+env/
+.venv/
+.env/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# IDE & Editor configuration
+.vscode/
+.idea/
+
+# Documentation
+README.md
+
+# Tests
+tests/
+
+# CI/CD configuration
+.github/
+
+# OS-generated files
+.DS_Store
+Thumbs.db

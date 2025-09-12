@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: api.Dockerfile
+      args:
+        - MODEL_URL=${MODEL_URL}
+        - TOKENIZER_URL=${TOKENIZER_URL}
+    container_name: badbuzz_api
+    ports:
+      - "5000:5000"
+    restart: unless-stopped
+    env_file:
+      - .env
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend.Dockerfile
+    container_name: badbuzz_frontend
+    ports:
+      - "8501:8501"
+    depends_on:
+      - api
+    restart: unless-stopped

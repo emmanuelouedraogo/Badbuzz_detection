@@ -20,6 +20,7 @@ venv/
 env/
 .venv/
 .env/
+.env.*.local
 
 # IDE & Editor Config
 ###################
@@ -35,7 +36,9 @@ Thumbs.db
 ###################
 .streamlit/
 
-#modèle
-saved_model/best_gensim_bidirectional_gru_en_model.keras
-tokenizer.pickle
-
+# Pytest
+###################
+.pytest_cache/
+htmlcov/
+coverage.xml
+.coverage

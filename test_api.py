@@ -1,0 +1,68 @@
+import json
+import pytest
+import numpy as np
+from app import app as flask_app  # Import the app from your file
+
+
+@pytest.fixture
+def app():
+    """Create and configure a new app instance for each test."""
+    # You can add test-specific configuration here if needed
+    yield flask_app
+
+
+@pytest.fixture
+def client(app):
+    """A test client for the app."""
+    return app.test_client()
+
+
+def test_predict_positive(client, monkeypatch):
+    """Test the /predict endpoint for a positive sentiment prediction."""
+
+    # Mock the model's predict method to return a low score (positive)
+    def mock_predict(*args, **kwargs):
+        return np.array([[0.1]])  # Score < 0.5 -> Positive
+
+    monkeypatch.setattr("app.model.predict", mock_predict)
+
+    response = client.post(
+        "/predict",
+        data=json.dumps({"text": "This is great!"}),
+        content_type="application/json",
+    )
+    data = response.get_json()
+
+    assert response.status_code == 200
+    assert data["prediction"] == "Positive"
+
+
+def test_predict_negative(client, monkeypatch):
+    """Test the /predict endpoint for a negative sentiment prediction."""
+
+    # Mock the model's predict method to return a high score (negative)
+    def mock_predict(*args, **kwargs):
+        return np.array([[0.9]])  # Score > 0.5 -> Negative
+
+    monkeypatch.setattr("app.model.predict", mock_predict)
+
+    response = client.post(
+        "/predict",
+        data=json.dumps({"text": "This is awful."}),
+        content_type="application/json",
+    )
+    data = response.get_json()
+
+    assert response.status_code == 200
+    assert data["prediction"] == "Negative"
+
+
+def test_predict_no_text(client):
+    """Test the /predict endpoint when no text is provided."""
+    response = client.post(
+        "/predict", data=json.dumps({}), content_type="application/json"
+    )
+    assert response.status_code == 400
+    data = response.get_json()
+    assert "error" in data
+    assert data["error"] == 'The "text" field is missing.'
