@@ -60,7 +60,7 @@ st.divider()
 
 # --- Example Buttons ---
 st.subheader("Try with an example:")
-cols = st.columns(3)
+cols = st.columns(2)
 with cols[0]:
     st.button(
         "Positive Example 😄",
@@ -76,15 +76,6 @@ with cols[1]:
         on_click=set_text,
         args=(
             "The service was terrible. I waited for an hour and the food was cold. I will not be coming back.",
-        ),
-        use_container_width=True,
-    )
-with cols[2]:
-    st.button(
-        "Neutral/Tricky Example 🤔",
-        on_click=set_text,
-        args=(
-            "The movie was two and a half hours long, and it certainly had a lot of special effects.",
         ),
         use_container_width=True,
     )

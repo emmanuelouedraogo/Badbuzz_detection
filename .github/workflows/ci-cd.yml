@@ -62,7 +62,7 @@ jobs:
     # This job runs only if the 'test' job succeeds
     needs: test
     # This job runs only on pushes to the main branch, not on pull requests
-    if: github.event_name == 'push' && github.ref == 'refs-actions/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     steps:
     - name: Checkout code
