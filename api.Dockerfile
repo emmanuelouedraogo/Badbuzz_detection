@@ -32,6 +32,9 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
+# Set TensorFlow log level to suppress INFO and WARNING messages (1=filter INFO, 2=filter WARNING, 3=filter ERROR)
+ENV TF_CPP_MIN_LOG_LEVEL=2
+
 # Create a non-root user for security
 RUN useradd --create-home appuser
 USER appuser

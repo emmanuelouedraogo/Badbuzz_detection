@@ -1,5 +1,9 @@
 # /full/path/to/your/project/badbuzz_detection/app.py
+# Set TensorFlow log level before any other imports.
+# 0 = all messages, 1 = filter INFO, 2 = filter WARNING, 3 = filter ERROR
 import os
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
+
 import sys
 import logging
 import numpy as np
