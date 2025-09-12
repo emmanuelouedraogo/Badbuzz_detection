@@ -103,6 +103,12 @@ def preprocess_text(text: str) -> np.ndarray:
     return padded_sequence
 
 
+@app.route("/health", methods=["GET"])
+def health_check():
+    """Health check endpoint to confirm the service is running."""
+    return jsonify({"status": "ok"}), 200
+
+
 @app.route("/predict", methods=["POST"])
 def predict():
     """Endpoint for sentiment prediction."""
