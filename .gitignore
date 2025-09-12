@@ -42,3 +42,7 @@ Thumbs.db
 htmlcov/
 coverage.xml
 .coverage
+
+# modèle
+saved_model/best_gensim_bidirectional_gru_en_model.keras
+tokenizer.pickle

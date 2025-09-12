@@ -1,6 +1,8 @@
 # /full/path/to/your/project/badbuzz_detection/streamlit_app.py
 import streamlit as st
 import requests
+import os
+from dotenv import load_dotenv
 
 # --- Page Configuration ---
 st.set_page_config(
@@ -31,11 +33,12 @@ st.markdown(
 )
 
 # --- API Configuration ---
-# The URL for the Flask API.
-# When running with Docker Compose, we use the service name 'api' as the hostname.
-# When running locally, this should be "http://127.0.0.1:5000/predict".
-API_URL = "http://api:5000/predict"
+load_dotenv()
 
+# The URL for the Flask API is loaded from an environment variable.
+# For local development, it's set in the .env file.
+# For Docker, it will be set in docker-compose.yml.
+API_URL = os.getenv("API_URL", "http://api:5000/predict")
 
 # --- Functions ---
 def set_text(text):
@@ -149,6 +152,7 @@ if st.button("Analyze Sentiment", type="primary", use_container_width=True):
         except requests.exceptions.ConnectionError:
             st.error(
                 "Connection to API failed. Please make sure the Flask server (app.py) is running."
+                + f" (Attempted to connect to: {API_URL})"
             )
         except Exception as e:
             st.error(f"An unexpected error occurred: {e}")

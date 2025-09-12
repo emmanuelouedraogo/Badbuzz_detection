@@ -3,12 +3,12 @@ import os
 import sys
 import logging
 import numpy as np
-import tensorflow as tf
 from flask import Flask, request, jsonify
 from keras.preprocessing.sequence import pad_sequences
 import pickle
 import requests
 from dotenv import load_dotenv
+from keras.saving import load_model
 
 # --- Configuration & Logging ---
 load_dotenv()
@@ -49,6 +49,9 @@ def download_file_if_not_exists(filepath, url_env_var):
             )
             sys.exit(1)
 
+# --- Flask App Initialization ---
+app = Flask(__name__)
+
 
 # --- Model & Tokenizer Loading ---
 download_file_if_not_exists(MODEL_PATH, "MODEL_URL")
@@ -57,7 +60,7 @@ download_file_if_not_exists(TOKENIZER_PATH, "TOKENIZER_URL")
 # These objects are loaded once at startup for better performance.
 logging.info("Loading Keras model...")
 try:
-    model = tf.keras.saving.load_model(MODEL_PATH)
+    model = load_model(MODEL_PATH)
     logging.info("Model loaded successfully.")
 except Exception as e:
     logging.error(f"Error loading model from {MODEL_PATH}: {e}")
@@ -74,9 +77,6 @@ except FileNotFoundError:
 except Exception as e:
     logging.error(f"Error loading tokenizer: {e}")
     sys.exit(1)
-
-# --- Flask App Initialization ---
-app = Flask(__name__)
 
 
 def preprocess_text(text: str) -> np.ndarray:
