@@ -1,16 +1,19 @@
-# Use an official Python runtime as a parent image
-FROM python:3.12-slim
+# ---- Builder Stage ----
+# This stage installs dependencies and downloads assets
+FROM python:3.12-slim as builder
+
+WORKDIR /app
 
 # Install wget for downloading files
 RUN apt-get update && apt-get install -y wget && rm -rf /var/lib/apt/lists/*
 
-# Set the working directory in the container
-WORKDIR /app
+# Create a virtual environment
+ENV VIRTUAL_ENV=/opt/venv
+RUN python -m venv $VIRTUAL_ENV
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
-# Copy the requirements file into the container
+# Install Python dependencies into the virtual environment
 COPY requirements.txt .
-
-# Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Declare build arguments that will be passed from docker-compose
@@ -18,12 +21,31 @@ ARG MODEL_URL
 ARG TOKENIZER_URL
 
 # Create directory for the model and download files from the provided URLs
-RUN mkdir -p saved_model
+RUN mkdir -p /app/saved_model
 RUN wget -O saved_model/best_gensim_bidirectional_gru_en_model.keras ${MODEL_URL}
 RUN wget -O tokenizer.pickle ${TOKENIZER_URL}
 
-# Copy only the application's source code
+
+# ---- Final Stage ----
+# This stage creates the final, smaller image
+FROM python:3.12-slim
+
+WORKDIR /app
+
+# Create a non-root user for security
+RUN useradd --create-home appuser
+USER appuser
+
+# Copy virtual env and models from builder stage
+COPY --from=builder /opt/venv /opt/venv
+COPY --from=builder /app/saved_model /app/saved_model
+COPY --from=builder /app/tokenizer.pickle /app/tokenizer.pickle
+
+# Copy the application's source code
 COPY app.py .
+
+# Activate the virtual environment
+ENV PATH="/opt/venv/bin:$PATH"
 
 # Make port 5000 available to the world outside this container
 EXPOSE 5000

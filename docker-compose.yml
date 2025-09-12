@@ -19,6 +19,7 @@ services:
     build:
       context: .
       dockerfile: frontend.Dockerfile
+      # No args needed here as it uses its own requirements file
     container_name: badbuzz_frontend
     ports:
       - "8501:8501"
