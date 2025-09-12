@@ -1,122 +1,243 @@
-# Bad Buzz Detection 🧠✨
+# Détection de Bad Buzz 🧠✨
 
-Ce projet est une application web d'analyse de sentiments qui utilise un modèle de deep learning (Bidirectional GRU) pour classifier un texte en **Positif** ou **Négatif**.
+[!CI/CD Pipeline](https://github.com/emmanuelouedraogo/Badbuzz_detection/actions/workflows/ci-cd.yml)
 
-L'application est composée de deux parties :
-1.  Une **API backend (Flask)** qui sert le modèle de machine learning.
-2.  Une **interface utilisateur frontend (Streamlit)** qui permet d'interagir avec l'API.
+Une application web complète pour l'analyse de sentiments, capable de classifier un texte en **Positif** ou **Négatif** à l'aide d'un modèle de Deep Learning. Ce projet est entièrement conteneurisé avec Docker et déployé automatiquement sur Azure via un pipeline CI/CD avec GitHub Actions.
 
+<!-- !Aperçu de l'application -->
 
+---
 
-## 🏛️ Architecture
+### Table des matières
 
--   **Frontend** : Streamlit - Fournit une interface web interactive et moderne.
--   **Backend** : Flask - Une micro-framework web pour exposer le modèle via une API REST.
--   **Modèle ML** : Un modèle Keras (`.keras`) entraîné pour l'analyse de sentiments.
--   **Serveur de Production** : Gunicorn - Un serveur WSGI pour exécuter l'application Flask en production.
--   **Hébergement** : Azure App Service - Pour le déploiement cloud de l'API.
+- À propos du projet
+- Stack Technologique
+- Architecture
+- Structure du projet
+- Démarrage rapide (Local)
+- Déploiement (CI/CD sur Azure)
+- Documentation de l'API
+- Contribuer
+- Licence
+- Contact
 
-## 🚀 Installation Locale
+---
 
-Suivez ces étapes pour lancer le projet sur votre machine locale.
+## À propos du projet
 
-### Prérequis
+Ce projet met en œuvre une solution de détection de "bad buzz" en analysant le sentiment de textes fournis par l'utilisateur. Il est composé de deux services principaux :
 
--   Python 3.8+
--   Git
+1. **Une API backend (Flask)** : Elle expose un modèle de Deep Learning (un GRU bidirectionnel) entraîné pour la classification de texte. L'API reçoit un texte et retourne une prédiction (Positif/Négatif) ainsi qu'un score de confiance.
+2. **Une interface frontend (Streamlit)** : Une application web simple et interactive qui permet aux utilisateurs de saisir du texte et de visualiser instantanément le résultat de l'analyse de sentiment.
 
-### 1. Cloner le dépôt
+L'ensemble du projet est conçu pour être robuste, scalable et facilement déployable grâce à la conteneurisation Docker et à un pipeline d'intégration et de déploiement continus (CI/CD).
 
-```bash
-git clone <url-du-depot>
-cd badbuzz_detection
+## Stack Technologique
+
+- **Backend**: Python, Flask, Gunicorn
+- **Frontend**: Streamlit
+- **Machine Learning**: TensorFlow/Keras, Gensim
+- **Conteneurisation**: Docker, Docker Compose
+- **CI/CD**: GitHub Actions
+- **Cloud & Hébergement**: Microsoft Azure (App Service, Container Registry)
+
+## Architecture
+
+Le schéma ci-dessous illustre le flux de déploiement automatisé, du push sur GitHub jusqu'à la mise en production sur Azure App Service.
+
+```mermaid
+graph TD
+    A[Développeur] -- git push --> B{GitHub};
+    B -- Déclenche --> C[GitHub Actions];
+    C -- 1. Test & Lint --> D[Pytest / Ruff];
+    C -- 2. Build Docker Images --> E[API & Frontend Images];
+    E -- 3. Push to Registry --> F[Azure Container Registry];
+    F -- 4. Webhook --> G[Azure App Service];
+    G -- 5. Pull & Restart --> H[Conteneurs en production];
+    I[Utilisateur] -- Accède à --> H;
+
+    subgraph "CI/CD Pipeline"
+        C
+        D
+        E
+    end
+
+    subgraph "Infrastructure Azure"
+        F
+        G
+        H
+    end
 ```
 
-### 2. Créer un environnement virtuel
-
-Il est fortement recommandé d'utiliser un environnement virtuel.
-
-```bash
-# Windows
-python -m venv badbuzzenv
-badbuzzenv\Scripts\activate
-
-# macOS / Linux
-python3 -m venv badbuzzenv
-source badbuzzenv/bin/activate
-```
-
-### 3. Installer les dépendances
-
-Installez toutes les bibliothèques nécessaires à partir du fichier `requirements.txt`.
-
-```bash
-pip install -r requirements.txt
-```
-
-### 4. Placer les fichiers du modèle
-
-Assurez-vous que votre modèle et votre tokenizer sont placés correctement dans le projet :
+## Structure du projet
 
 ```
 badbuzz_detection/
-├── saved_model/
-│   └── best_gensim_bidirectional_gru_en_model.keras  <-- VOTRE MODÈLE ICI
-├── tokenizer.pickle                                  <-- VOTRE TOKENIZER ICI
-├── app.py
-└── streamlit_app.py
+├── .github/workflows/ci-cd.yml   # Pipeline CI/CD avec GitHub Actions
+├── .dockerignore                   # Fichiers à ignorer par Docker
+├── .gitignore                      # Fichiers à ignorer par Git
+├── api.Dockerfile                  # Instructions pour construire l'image de l'API
+├── app.py                          # Code source de l'API Flask
+├── docker-compose.prod.yml         # Composition pour la production (utilisée par App Service)
+├── docker-compose.yml              # Composition pour le développement local
+├── frontend.Dockerfile             # Instructions pour construire l'image du frontend
+├── README.md                       # Ce fichier
+├── requirements-frontend.txt       # Dépendances Python du frontend
+├── requirements.txt                # Dépendances Python de l'API
+├── streamlit_app.py                # Code source du frontend Streamlit
+└── test_app.py                     # Tests unitaires pour l'API
 ```
 
-## ▶️ Lancement de l'application
+## Démarrage rapide (Local)
 
-Vous devez lancer deux processus dans deux terminaux distincts.
+Suivez ces étapes pour lancer le projet sur votre machine en utilisant Docker.
 
-### 1. Lancer l'API Flask
+### Prérequis
 
-Dans le premier terminal (avec l'environnement virtuel activé) :
+- Git
+- Docker
+- Docker Compose
 
-```bash
-python app.py
-```
+### Installation et Lancement
 
-Le serveur démarrera sur `http://127.0.0.1:5000`. Vous devriez voir les logs indiquant que le modèle et le tokenizer ont été chargés.
+1. **Cloner le dépôt :**
 
-### 2. Lancer l'interface Streamlit
-
-Dans un second terminal (avec l'environnement virtuel activé) :
-
-```bash
-streamlit run streamlit_app.py
-```
-
-Votre navigateur devrait s'ouvrir automatiquement sur l'interface de l'application.
-
-## ☁️ Déploiement sur Azure App Service
-
-L'API Flask est conçue pour être déployée sur des services cloud comme Azure App Service.
-
-1.  **Préparation** : Assurez-vous que `gunicorn` est dans `requirements.txt`.
-2.  **Création des ressources** : Utilisez Azure CLI pour créer un Groupe de Ressources, un Plan App Service et une Web App.
-3.  **Configuration** : Configurez la commande de démarrage de l'application sur Azure :
     ```bash
-    az webapp config set --resource-group <rg-name> --name <app-name> --startup-file "gunicorn --bind=0.0.0.0 --timeout 600 app:app"
-    ```
-4.  **Déploiement** : Déployez le code via Git local en "pushant" sur le remote Azure.
-    ```bash
-    git push azure main
+    git clone https://github.com/emmanuelouedraogo/Badbuzz_detection.git
+    cd Badbuzz_detection
     ```
 
-## 📝 Documentation de l'API
+2. **Configurer les variables d'environnement :**
+    Créez un fichier `.env` à la racine du projet en vous basant sur le fichier `.env.example` (s'il existe) ou en copiant le contenu ci-dessous. Les URLs sont déjà pré-remplies.
+
+    ```shell
+    # .env
+    MODEL_URL="https://github.com/emmanuelouedraogo/Badbuzz_detection/releases/download/v1.0.0/best_gensim_bidirectional_gru_en_model.keras"
+    TOKENIZER_URL="https://github.com/emmanuelouedraogo/Badbuzz_detection/releases/download/v1.0.0/tokenizer.pickle"
+    API_URL="http://127.0.0.1:5000/predict"
+    ```
+
+3. **Lancer avec Docker Compose :**
+    Cette commande va construire les images Docker pour l'API et le frontend, puis démarrer les conteneurs.
+
+    ```bash
+    docker-compose up --build
+    ```
+
+4. **Accéder à l'application :**
+    Ouvrez votre navigateur et allez à l'adresse suivante :
+    **<http://localhost:8501>**
+
+## Déploiement (CI/CD sur Azure)
+
+Le déploiement est entièrement automatisé grâce à GitHub Actions et Azure App Service.
+
+### Prérequis
+
+- Un compte Microsoft Azure
+- Azure CLI installé ou utilisation du Cloud Shell
+- Un compte GitHub
+
+### Étape 1 : Configuration des secrets sur GitHub
+
+Allez dans les paramètres de votre dépôt GitHub (`Settings > Secrets and variables > Actions`) et ajoutez les secrets suivants :
+
+- `ACR_LOGIN_SERVER` : L'URL de votre Azure Container Registry (ex: `monacr.azurecr.io`).
+- `ACR_USERNAME` : Le nom d'utilisateur pour se connecter à l'ACR.
+- `ACR_PASSWORD` : Le mot de passe pour se connecter à l'ACR.
+- `MODEL_URL` : L'URL de téléchargement de votre modèle `.keras`.
+- `TOKENIZER_URL` : L'URL de téléchargement de votre tokenizer `.pickle`.
+
+### Étape 2 : Création de l'infrastructure sur Azure
+
+Utilisez le **Cloud Shell** sur le portail Azure pour exécuter les commandes suivantes.
+
+1. **Créer le groupe de ressources :**
+
+    ```bash
+    az group create --name BadbuzzResourceGroup --location "West Europe"
+    ```
+
+2. **Créer le registre de conteneurs (ACR) :**
+    *(Choisissez un nom unique pour `badbuzzacrunique`)*
+
+    ```bash
+    az acr create --resource-group BadbuzzResourceGroup --name badbuzzacrunique --sku Basic --admin-enabled true
+    ```
+
+3. **Créer le plan App Service :**
+
+    ```bash
+    az appservice plan create --name BadbuzzAppServicePlan --resource-group BadbuzzResourceGroup --sku B1 --is-linux
+    ```
+
+4. **Créer l'application web multi-conteneurs :**
+
+    ```bash
+    az webapp create \
+        --resource-group BadbuzzResourceGroup \
+        --plan BadbuzzAppServicePlan \
+        --name badbuzz-webapp \
+        --multicontainer-config-type compose \
+        --multicontainer-config-file docker-compose.prod.yml
+    ```
+
+5. **Configurer la connexion à l'ACR :**
+
+    ```bash
+    az webapp config container set \
+        --name badbuzz-webapp \
+        --resource-group BadbuzzResourceGroup \
+        --docker-registry-server-url "https://$(az acr show --name badbuzzacrunique --query loginServer -o tsv)" \
+        --docker-registry-server-user "$(az acr credential show --name badbuzzacrunique --query username -o tsv)" \
+        --docker-registry-server-password "$(az acr credential show --name badbuzzacrunique --query passwords[0].value -o tsv)"
+    ```
+
+6. **Définir les variables d'environnement pour l'API :**
+
+    ```bash
+    az webapp config appsettings set \
+        --resource-group BadbuzzResourceGroup \
+        --name badbuzz-webapp \
+        --settings MODEL_URL="<URL_DU_MODELE>" TOKENIZER_URL="<URL_DU_TOKENIZER>"
+    ```
+
+7. **Activer le déploiement continu (CD) :**
+
+    ```bash
+    az webapp deployment container config --enable-cd true --name badbuzz-webapp --resource-group BadbuzzResourceGroup
+    ```
+
+### Étape 3 : Déclencher le déploiement
+
+Poussez simplement vos modifications sur la branche `main` de votre dépôt GitHub.
+
+```bash
+git push origin main
+```
+
+Le pipeline GitHub Actions va automatiquement :
+
+1. Lancer les tests.
+2. Construire les images Docker.
+3. Pousser les images sur votre Azure Container Registry.
+4. Azure App Service détectera les nouvelles images et mettra à jour l'application.
+
+Votre application sera accessible après quelques minutes à l'adresse `http://badbuzz-webapp.azurewebsites.net`.
+
+## Documentation de l'API
 
 ### Endpoint de prédiction
 
--   **URL** : `/predict`
--   **Méthode** : `POST`
--   **Description** : Analyse le sentiment du texte fourni.
+- **URL** : `/predict`
+- **Méthode** : `POST`
+- **Description** : Analyse le sentiment du texte fourni.
 
 #### Requête
--   **Headers** : `Content-Type: application/json`
--   **Body** (raw JSON) :
+
+* **Headers** : `Content-Type: application/json`
+- **Body** (raw JSON) :
+
   ```json
   {
     "text": "This was a fantastic experience!"
@@ -124,12 +245,35 @@ L'API Flask est conçue pour être déployée sur des services cloud comme Azure
   ```
 
 #### Réponse (Succès)
--   **Code** : `200 OK`
--   **Body** :
+
+* **Code** : `200 OK`
+- **Body** :
+
   ```json
   {
     "prediction": "Positive",
     "confidence_score": 0.0123
   }
   ```
+
   *Note : Le `confidence_score` est le score brut du modèle. Un score proche de 0 est "Positif", un score proche de 1 est "Négatif".*
+
+## Contribuer
+
+Les contributions sont ce qui rend la communauté open source un endroit incroyable pour apprendre, inspirer et créer. Toute contribution que vous faites est **grandement appréciée**.
+
+1. Forkez le projet
+2. Créez votre branche de fonctionnalité (`git checkout -b feature/AmazingFeature`)
+3. Commitez vos changements (`git commit -m 'Add some AmazingFeature'`)
+4. Poussez vers la branche (`git push origin feature/AmazingFeature`)
+5. Ouvrez une Pull Request
+
+## Licence
+
+Distribué sous la licence MIT. Voir `LICENSE` for for more information.
+
+## Contact
+
+Emmanuel OUEDRAOGO - <emmanuelrhema.amjc@gmail.com>
+
+Lien du projet : <https://github.com/emmanuelouedraogo/Badbuzz_detection>

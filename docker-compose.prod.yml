@@ -1,22 +1,20 @@
 services:
   api:
-    # Remplacez VOTRE_NOM_DOCKERHUB par votre nom d'utilisateur Docker Hub
-    image: VOTRE_NOM_DOCKERHUB/badbuzz-api:latest
+    image: badbuzzacrunique.azurecr.io/badbuzz-api:latest
     container_name: badbuzz_api
-    ports:
-      - "5000:5000"
     restart: unless-stopped
-    env_file:
-      - .env
+    # Les variables d'environnement seront définies dans Azure App Service
 
   frontend:
-    # Remplacez VOTRE_NOM_DOCKERHUB par votre nom d'utilisateur Docker Hub
-    image: VOTRE_NOM_DOCKERHUB/badbuzz-frontend:latest
+    image: badbuzzacrunique.azurecr.io/badbuzz-frontend:latest
     container_name: badbuzz_frontend
     ports:
-      - "8501:8501"
+      # App Service expose le port 80 par défaut, que nous mappons au port 8501 de notre conteneur.
+      - "80:8501"
     depends_on:
       - api
     restart: unless-stopped
     environment:
       - API_URL=http://api:5000/predict
+      # Indique à App Service sur quel port notre application écoute à l'intérieur du conteneur.
+      - WEBSITES_PORT=8501
