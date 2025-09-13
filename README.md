@@ -73,22 +73,22 @@ graph TD
 
 ```
 badbuzz_detection/
-├── .github/workflows/ci-cd.yml   # Pipeline CI/CD avec GitHub Actions
-├── .dockerignore                   # Fichiers à ignorer par Docker
-├── .gitignore                      # Fichiers à ignorer par Git
-├── api.Dockerfile                  # Instructions pour construire l'image de l'API
-├── app.py                          # Code source de l'API Flask
-├── docker-compose.prod.yml         # Composition pour la production (utilisée par App Service)
-├── docker-compose.yml              # Composition pour le développement local
-├── frontend.Dockerfile             # Instructions pour construire l'image du frontend
-├── README.md                       # Ce fichier
-├── requirements-frontend.txt       # Dépendances Python du frontend
-├── requirements.txt                # Dépendances Python de l'API
-├── streamlit_app.py                # Code source du frontend Streamlit
-└── test_app.py                     # Tests unitaires pour l'API
+├── .github/workflows/ci-cd.yml      # Pipeline CI/CD avec GitHub Actions
+├── .dockerignore                      # Fichiers à ignorer par Docker
+├── .gitignore                         # Fichiers à ignorer par Git
+├── api.Dockerfile                     # Instructions pour construire l'image de l'API
+├── app.py                             # Code source de l'API Flask
+├── azure-sidecar-config.json          # Configuration pour Azure App Service (Sidecar)
+├── docker-compose.yml                 # Composition pour le développement local
+├── frontend.Dockerfile                # Instructions pour construire l'image du frontend
+├── README.md                          # Ce fichier
+├── requirements-dev.txt               # Dépendances pour le développement et les tests
+├── requirements.txt                   # Dépendances de production (API & Frontend)
+├── streamlit_app.py                   # Code source du frontend Streamlit
+└── test_app.py                        # Tests unitaires pour l'API
 ```
 
-## Démarrage rapide (Local)
+## 🚀 Démarrage rapide (Local)
 
 Suivez ces étapes pour lancer le projet sur votre machine en utilisant Docker.
 
@@ -128,7 +128,7 @@ Suivez ces étapes pour lancer le projet sur votre machine en utilisant Docker.
     Ouvrez votre navigateur et allez à l'adresse suivante :
     **<http://localhost:8501>**
 
-## Déploiement (CI/CD sur Azure)
+## ☁️ Déploiement (CI/CD sur Azure)
 
 Le déploiement est entièrement automatisé grâce à GitHub Actions et Azure App Service.
 
@@ -171,19 +171,19 @@ Utilisez le **Cloud Shell** sur le portail Azure pour exécuter les commandes su
     az appservice plan create --name BadbuzzAppServicePlan --resource-group BadbuzzResourceGroup --sku B1 --is-linux
     ```
 
-4. **Créer l'application web multi-conteneurs :**
-
+4. **Créer l'application web :**
+    *(Nous utilisons une image placeholder comme `nginx` qui sera immédiatement remplacée)*
     ```bash
-    az webapp create \
-        --resource-group BadbuzzResourceGroup \
-        --plan BadbuzzAppServicePlan \
-        --name badbuzz-webapp \
-        --multicontainer-config-type compose \
-        --multicontainer-config-file docker-compose.prod.yml
+    az webapp create --resource-group BadbuzzResourceGroup --plan BadbuzzAppServicePlan --name badbuzz-webapp --image nginx
     ```
 
-5. **Configurer la connexion à l'ACR :**
+5. **Configurer les conteneurs (sidecar) :**
+    *(Cette commande utilise le fichier `azure-sidecar-config.json`)*
+    ```bash
+    az webapp config set --resource-group BadbuzzResourceGroup --name badbuzz-webapp --generic-configurations @azure-sidecar-config.json
+    ```
 
+6. **Configurer la connexion à l'ACR :**
     ```bash
     az webapp config container set \
         --name badbuzz-webapp \
@@ -191,15 +191,6 @@ Utilisez le **Cloud Shell** sur le portail Azure pour exécuter les commandes su
         --docker-registry-server-url "https://$(az acr show --name badbuzzacrunique --query loginServer -o tsv)" \
         --docker-registry-server-user "$(az acr credential show --name badbuzzacrunique --query username -o tsv)" \
         --docker-registry-server-password "$(az acr credential show --name badbuzzacrunique --query passwords[0].value -o tsv)"
-    ```
-
-6. **Définir les variables d'environnement pour l'API :**
-
-    ```bash
-    az webapp config appsettings set \
-        --resource-group BadbuzzResourceGroup \
-        --name badbuzz-webapp \
-        --settings MODEL_URL="<URL_DU_MODELE>" TOKENIZER_URL="<URL_DU_TOKENIZER>"
     ```
 
 7. **Activer le déploiement continu (CD) :**
@@ -225,7 +216,7 @@ Le pipeline GitHub Actions va automatiquement :
 
 Votre application sera accessible après quelques minutes à l'adresse `http://badbuzz-webapp.azurewebsites.net`.
 
-## Documentation de l'API
+## 📚 Documentation de l'API
 
 ### Endpoint de prédiction
 
@@ -258,7 +249,7 @@ Votre application sera accessible après quelques minutes à l'adresse `http://b
 
   *Note : Le `confidence_score` est le score brut du modèle. Un score proche de 0 est "Positif", un score proche de 1 est "Négatif".*
 
-## Contribuer
+## 🤝 Contribuer
 
 Les contributions sont ce qui rend la communauté open source un endroit incroyable pour apprendre, inspirer et créer. Toute contribution que vous faites est **grandement appréciée**.
 
@@ -268,11 +259,11 @@ Les contributions sont ce qui rend la communauté open source un endroit incroya
 4. Poussez vers la branche (`git push origin feature/AmazingFeature`)
 5. Ouvrez une Pull Request
 
-## Licence
+## 📜 Licence
 
 Distribué sous la licence MIT. Voir `LICENSE` for for more information.
 
-## Contact
+## ✉️ Contact
 
 Emmanuel OUEDRAOGO - <emmanuelrhema.amjc@gmail.com>
 
