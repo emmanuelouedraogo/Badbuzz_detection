@@ -46,12 +46,16 @@ def download_file_if_not_exists(filepath, url_env_var):
                 logging.info(f"Successfully downloaded '{filepath}'.")
             except Exception as e:
                 logging.error(f"Failed to download file from {url}. Error: {e}")
-                sys.exit(1)
+                raise RuntimeError(
+                    f"Failed to download required file from {url}."
+                ) from e
         else:
             logging.error(
                 f"File '{filepath}' not found and no download URL ('{url_env_var}') provided in .env file."
             )
-            sys.exit(1)
+            raise RuntimeError(
+                f"Missing environment variable for download: {url_env_var}"
+            )
 
 # --- Flask App Initialization ---
 app = Flask(__name__)
@@ -85,7 +89,7 @@ try:
     logging.info("Model loaded successfully.")
 except Exception as e:
     logging.error(f"Error loading model from {MODEL_PATH}: {e}")
-    sys.exit(1)  # Exit if the core component fails to load
+    raise RuntimeError(f"Could not load Keras model from {MODEL_PATH}.") from e
 
 logging.info("Loading tokenizer...")
 try:
@@ -94,10 +98,10 @@ try:
     logging.info("Tokenizer loaded successfully.")
 except FileNotFoundError:
     logging.error(f"Error: Tokenizer file not found at '{TOKENIZER_PATH}'.")
-    sys.exit(1)
+    raise RuntimeError(f"Tokenizer file not found at {TOKENIZER_PATH}.")
 except Exception as e:
     logging.error(f"Error loading tokenizer: {e}")
-    sys.exit(1)
+    raise RuntimeError("Could not load tokenizer pickle file.") from e
 
 # --- Warm-up the model on startup ---
 # The first prediction is always slow, so we do a dummy one at startup.
