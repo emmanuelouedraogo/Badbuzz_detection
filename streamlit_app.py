@@ -40,6 +40,7 @@ load_dotenv()
 # For Docker, it will be set in docker-compose.yml.
 API_URL = os.getenv("API_URL", "http://api:5000/predict")
 
+
 # --- Functions ---
 def set_text(text):
     """Callback to set the text area content."""

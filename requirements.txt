@@ -5,6 +5,3 @@ streamlit
 requests
 gensim
 gunicorn
-python-dotenv
-pytest
-pytest-cov

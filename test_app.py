@@ -17,6 +17,7 @@ def test_health_check(client):
     assert response.status_code == 200
     assert response.json == {"status": "ok"}
 
+
 def test_predict_missing_text(client):
     """Test the /predict endpoint with no text provided, expecting a 400 error."""
     response = client.post("/predict", json={})

@@ -2,16 +2,17 @@
 # Set TensorFlow log level before any other imports.
 # 0 = all messages, 1 = filter INFO, 2 = filter WARNING, 3 = filter ERROR
 import os
+
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
 import logging
 import numpy as np
 from flask import Flask, request, jsonify
-from keras.preprocessing.sequence import pad_sequences
 import pickle
 import requests
 from dotenv import load_dotenv
-from keras.saving import load_model
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+from tensorflow.keras.saving import load_model
 
 # --- Configuration & Logging ---
 load_dotenv()
@@ -55,6 +56,7 @@ def download_file_if_not_exists(filepath, url_env_var):
             raise RuntimeError(
                 f"Missing environment variable for download: {url_env_var}"
             )
+
 
 # --- Flask App Initialization ---
 app = Flask(__name__)
