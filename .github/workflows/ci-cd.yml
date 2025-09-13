@@ -45,7 +45,7 @@ jobs:
       run: |
         # Run tests, generate a report in the terminal, and fail the build
         # if test coverage is below 90%.
-        pytest --cov=app --cov-report=term-missing --cov-fail-under=50
+        pytest --cov=app --cov-report=html --cov-report=term-missing --cov-fail-under=50
 
     - name: Upload HTML coverage report
       # This step always runs, even if the previous one fails,
