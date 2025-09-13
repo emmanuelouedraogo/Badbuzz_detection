@@ -1,6 +1,6 @@
 # Détection de Bad Buzz 🧠✨
 
-[!CI/CD Pipeline](https://github.com/emmanuelouedraogo/Badbuzz_detection/actions/workflows/ci-cd.yml)
+[![CI/CD Pipeline](https://github.com/emmanuelouedraogo/badbuzz-detection/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/emmanuelouedraogo/badbuzz-detection/actions/workflows/ci-cd.yml)
 
 Une application web complète pour l'analyse de sentiments, capable de classifier un texte en **Positif** ou **Négatif** à l'aide d'un modèle de Deep Learning. Ce projet est entièrement conteneurisé avec Docker et déployé automatiquement sur Azure via un pipeline CI/CD avec GitHub Actions.
 
@@ -103,8 +103,8 @@ Suivez ces étapes pour lancer le projet sur votre machine en utilisant Docker.
 1. **Cloner le dépôt :**
 
     ```bash
-    git clone https://github.com/emmanuelouedraogo/Badbuzz_detection.git
-    cd Badbuzz_detection
+    git clone https://github.com/emmanuelouedraogo/badbuzz-detection.git
+    cd badbuzz-detection
     ```
 
 2. **Configurer les variables d'environnement :**
@@ -112,8 +112,8 @@ Suivez ces étapes pour lancer le projet sur votre machine en utilisant Docker.
 
     ```shell
     # .env
-    MODEL_URL="https://github.com/emmanuelouedraogo/Badbuzz_detection/releases/download/v1.0.0/best_gensim_bidirectional_gru_en_model.keras"
-    TOKENIZER_URL="https://github.com/emmanuelouedraogo/Badbuzz_detection/releases/download/v1.0.0/tokenizer.pickle"
+    MODEL_URL="https://github.com/emmanuelouedraogo/badbuzz-detection/releases/download/v1.0.0/best_gensim_bidirectional_gru_en_model.keras"
+    TOKENIZER_URL="https://github.com/emmanuelouedraogo/badbuzz-detection/releases/download/v1.0.0/tokenizer.pickle"
     API_URL="http://127.0.0.1:5000/predict"
     ```
 
@@ -267,6 +267,6 @@ Distribué sous la licence KAIZO. Voir `LICENSE` for for more information.
 
 Emmanuel OUEDRAOGO - <emmanuelrhema.amjc@gmail.com>
 
-Lien du projet : <https://github.com/emmanuelouedraogo/Badbuzz_detection>
+Lien du projet : <https://github.com/emmanuelouedraogo/badbuzz-detection>
 
 Epikaizo
