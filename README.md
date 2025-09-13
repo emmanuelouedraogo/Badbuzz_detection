@@ -268,3 +268,5 @@ Distribué sous la licence KAIZO. Voir `LICENSE` for for more information.
 Emmanuel OUEDRAOGO - <emmanuelrhema.amjc@gmail.com>
 
 Lien du projet : <https://github.com/emmanuelouedraogo/Badbuzz_detection>
+
+Epikaizo
