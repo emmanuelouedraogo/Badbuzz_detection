@@ -155,48 +155,48 @@ Utilisez le **Cloud Shell** sur le portail Azure pour exécuter les commandes su
 1. **Créer le groupe de ressources :**
 
     ```bash
-    az group create --name BadbuzzResourceGroup --location "West Europe"
+    az group create --name badbuzzresourcegroup --location "West Europe"
     ```
 
 2. **Créer le registre de conteneurs (ACR) :**
-    *(Choisissez un nom unique pour `badbuzzacrunique`)*
+    *(Choisissez un nom unique et **en minuscules** pour `badbuzzacr`)*
 
     ```bash
-    az acr create --resource-group BadbuzzResourceGroup --name badbuzzacrunique --sku Basic --admin-enabled true
+    az acr create --resource-group badbuzzresourcegroup --name badbuzzacr --sku Basic --admin-enabled true
     ```
 
 3. **Créer le plan App Service :**
 
     ```bash
-    az appservice plan create --name BadbuzzAppServicePlan --resource-group BadbuzzResourceGroup --sku B1 --is-linux
+    az appservice plan create --name badbuzzappserviceplan --resource-group badbuzzresourcegroup --sku B1 --is-linux
     ```
 
 4. **Créer l'application web :**
     *(Nous utilisons une image placeholder comme `nginx` qui sera immédiatement remplacée)*
     ```bash
-    az webapp create --resource-group BadbuzzResourceGroup --plan BadbuzzAppServicePlan --name badbuzz-webapp --image nginx
+    az webapp create --resource-group badbuzzresourcegroup --plan badbuzzappserviceplan --name badbuzz-webapp --deployment-container-image-name nginx
     ```
 
 5. **Configurer les conteneurs (sidecar) :**
     *(Cette commande utilise le fichier `azure-sidecar-config.json` pour configurer les conteneurs)*
     ```bash
-    az webapp config set --resource-group BadbuzzResourceGroup --name badbuzz-webapp --generic-configurations "@azure-sidecar-config.json"
+    az webapp config set --resource-group badbuzzresourcegroup --name badbuzz-webapp --generic-configurations "@azure-sidecar-config.json"
     ```
 
 6. **Configurer la connexion à l'ACR :**
     ```bash
     az webapp config container set \
         --name badbuzz-webapp \
-        --resource-group BadbuzzResourceGroup \
-        --docker-registry-server-url "https://$(az acr show --name badbuzzacrunique --query loginServer -o tsv)" \
-        --docker-registry-server-user "$(az acr credential show --name badbuzzacrunique --query username -o tsv)" \
-        --docker-registry-server-password "$(az acr credential show --name badbuzzacrunique --query passwords[0].value -o tsv)"
+        --resource-group badbuzzresourcegroup \
+        --docker-registry-server-url "https://$(az acr show --name badbuzzacr --query loginServer -o tsv)" \
+        --docker-registry-server-user "$(az acr credential show --name badbuzzacr --query username -o tsv)" \
+        --docker-registry-server-password "$(az acr credential show --name badbuzzacr --query passwords[0].value -o tsv)"
     ```
 
 7. **Activer le déploiement continu (CD) :**
 
     ```bash
-    az webapp deployment container config --enable-cd true --name badbuzz-webapp --resource-group BadbuzzResourceGroup
+    az webapp deployment container config --enable-cd true --name badbuzz-webapp --resource-group badbuzzresourcegroup
     ```
 
 ### Étape 3 : Déclencher le déploiement
