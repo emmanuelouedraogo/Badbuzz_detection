@@ -36,8 +36,8 @@ def download_file_if_not_exists(filepath, url_env_var):
         if url:
             logging.info(f"File '{filepath}' not found. Downloading from {url}...")
             try:
-                # Ensure directory exists
-                os.makedirs(os.path.dirname(filepath), exist_ok=True)
+                # Ensure directory exists, even if filepath is just a filename
+                os.makedirs(os.path.dirname(filepath) or ".", exist_ok=True)
                 with requests.get(url, stream=True) as r:
                     r.raise_for_status()
                     with open(filepath, "wb") as f:
@@ -80,6 +80,10 @@ def preprocess_text(text: str) -> np.ndarray:
 
 
 # --- Model & Tokenizer Loading ---
+# Ensure directories exist before any operation
+os.makedirs(os.path.dirname(MODEL_PATH) or ".", exist_ok=True)
+os.makedirs(os.path.dirname(TOKENIZER_PATH) or ".", exist_ok=True)
+
 download_file_if_not_exists(MODEL_PATH, "MODEL_URL")
 download_file_if_not_exists(TOKENIZER_PATH, "TOKENIZER_URL")
 
