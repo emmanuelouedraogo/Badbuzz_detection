@@ -178,9 +178,9 @@ Utilisez le **Cloud Shell** sur le portail Azure pour exécuter les commandes su
     ```
 
 5. **Configurer les conteneurs (sidecar) :**
-    *(Cette commande utilise le fichier `azure-sidecar-config.json`)*
+    *(Cette commande utilise le fichier `azure-sidecar-config.json` pour configurer les conteneurs)*
     ```bash
-    az webapp config set --resource-group BadbuzzResourceGroup --name badbuzz-webapp --generic-configurations @azure-sidecar-config.json
+    az webapp config set --resource-group BadbuzzResourceGroup --name badbuzz-webapp --generic-configurations "@azure-sidecar-config.json"
     ```
 
 6. **Configurer la connexion à l'ACR :**
