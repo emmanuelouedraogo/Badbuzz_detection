@@ -4,7 +4,6 @@
 import os
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
-import sys
 import logging
 import numpy as np
 from flask import Flask, request, jsonify
@@ -152,7 +151,7 @@ def predict():
         )
         return jsonify(response)
 
-    except Exception as e:
+    except Exception:
         logging.exception("An error occurred during prediction.")
         return jsonify({"error": "An internal server error occurred."}), 500
 
