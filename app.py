@@ -57,6 +57,23 @@ def download_file_if_not_exists(filepath, url_env_var):
 app = Flask(__name__)
 
 
+def preprocess_text(text: str) -> np.ndarray:
+    """
+    Preprocesses raw text to be compatible with the model.
+    1. Tokenizes the text
+    2. Converts to a sequence of integers
+    3. Applies padding
+    """
+    if not tokenizer:
+        # This check is now redundant due to sys.exit() on load failure, but good for safety
+        raise RuntimeError("Tokenizer is not available.")
+
+    sequences = tokenizer.texts_to_sequences([text])
+    padded_sequence = pad_sequences(sequences, maxlen=MAX_SEQUENCE_LENGTH)
+
+    return padded_sequence
+
+
 # --- Model & Tokenizer Loading ---
 download_file_if_not_exists(MODEL_PATH, "MODEL_URL")
 download_file_if_not_exists(TOKENIZER_PATH, "TOKENIZER_URL")
@@ -82,25 +99,17 @@ except Exception as e:
     logging.error(f"Error loading tokenizer: {e}")
     sys.exit(1)
 
-
-def preprocess_text(text: str) -> np.ndarray:
-    """
-    Preprocesses raw text to be compatible with the model.
-    1. Tokenizes the text
-    2. Converts to a sequence of integers
-    3. Applies padding
-    """
-    if not tokenizer:
-        # This check is now redundant due to sys.exit() on load failure, but good for safety
-        raise RuntimeError("Tokenizer is not available.")
-
-    # Convertit le texte en une séquence d'entiers
-    sequences = tokenizer.texts_to_sequences([text])
-
-    # Applique le padding pour avoir une longueur de séquence fixe
-    padded_sequence = pad_sequences(sequences, maxlen=MAX_SEQUENCE_LENGTH)
-
-    return padded_sequence
+# --- Warm-up the model on startup ---
+# The first prediction is always slow, so we do a dummy one at startup.
+with app.app_context():
+    logging.info("Warming up the model...")
+    try:
+        dummy_text = "This is a warm-up sentence."
+        processed_text = preprocess_text(dummy_text)
+        model.predict(processed_text, verbose=0)
+        logging.info("Model is warmed up and ready.")
+    except Exception as e:
+        logging.error(f"An error occurred during model warm-up: {e}")
 
 
 @app.route("/health", methods=["GET"])
@@ -124,7 +133,7 @@ def predict():
         processed_text = preprocess_text(text)
 
         # Prediction
-        prediction_score = model.predict(processed_text)[0][0]
+        prediction_score = model.predict(processed_text, verbose=0)[0][0]
 
         # Interpretation of the score (threshold at 0.5).
         # Based on user feedback, the model's output convention is:

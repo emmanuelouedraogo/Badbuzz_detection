@@ -22,3 +22,13 @@ def test_predict_missing_text(client):
     response = client.post("/predict", json={})
     assert response.status_code == 400
     assert response.json == {"error": 'The "text" field is missing.'}
+
+
+def test_predict_success(client):
+    """Test the /predict endpoint with valid text, expecting a 200 OK response."""
+    response = client.post("/predict", json={"text": "this is a wonderful movie"})
+    assert response.status_code == 200
+    json_data = response.json
+    assert "prediction" in json_data
+    assert "confidence_score" in json_data
+    assert json_data["prediction"] in ["Positive", "Negative"]
