@@ -261,7 +261,7 @@ Les contributions sont ce qui rend la communauté open source un endroit incroya
 
 ## 📜 Licence
 
-Distribué sous la licence MIT. Voir `LICENSE` for for more information.
+Distribué sous la licence KAIZO. Voir `LICENSE` for for more information.
 
 ## ✉️ Contact
 
