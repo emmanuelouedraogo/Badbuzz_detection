@@ -8,9 +8,6 @@ services:
   frontend:
     image: badbuzzacrunique.azurecr.io/badbuzz-frontend:latest
     container_name: badbuzz_frontend
-    ports:
-      # App Service expose le port 80 par défaut, que nous mappons au port 8501 de notre conteneur.
-      - "80:8501"
     depends_on:
       - api
     restart: unless-stopped
