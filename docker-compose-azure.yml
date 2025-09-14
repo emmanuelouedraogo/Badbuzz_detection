@@ -15,3 +15,9 @@ services:
     environment:
       - LOG_LEVEL=INFO
       - WEBSITES_CONTAINER_START_TIME_LIMIT=600
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
