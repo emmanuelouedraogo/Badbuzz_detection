@@ -108,6 +108,11 @@ jobs:
       name: Staging
       url: https://badbuzz-webapp-staging.azurewebsites.net
     steps:
+      - name: 'Login via Azure CLI'
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
       - name: 'Deploy to Azure Web App (Staging Slot)'
         uses: azure/webapps-deploy@v2
         with:
@@ -132,7 +137,7 @@ jobs:
     needs: approve-for-production
     steps:
       - name: 'Login via Azure CLI'
-        uses: azure/login@v1
+        uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }} # Vous devrez créer ce secret
 

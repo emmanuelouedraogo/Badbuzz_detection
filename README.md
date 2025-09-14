@@ -156,10 +156,11 @@ Allez dans les paramètres de votre dépôt GitHub (`Settings > Secrets and vari
 - `ACR_PASSWORD` : Le mot de passe pour se connecter à l'ACR.
 - `MODEL_URL` : L'URL de téléchargement de votre modèle `.keras`.
 - `TOKENIZER_URL` : L'URL de téléchargement de votre tokenizer `.pickle`.
+- `AZURE_CREDENTIALS` : Le JSON d'authentification pour le principal de service.
 
 #### Récupération des valeurs pour les secrets
 
-Une fois l'infrastructure créée (étape 2 ci-dessous), vous pouvez récupérer les valeurs pour les secrets `ACR_*` avec les commandes suivantes dans le Cloud Shell :
+Une fois l'infrastructure créée (étape 2 ci-dessous), vous pouvez récupérer les valeurs pour les secrets avec les commandes suivantes dans le Cloud Shell :
 
 ```bash
 # Assurez-vous que la variable ACR_NAME est définie avec le nom que vous avez choisi
@@ -173,6 +174,18 @@ az acr credential show --name $ACR_NAME --query username -o tsv
 
 # Pour ACR_PASSWORD
 az acr credential show --name $ACR_NAME --query "passwords[0].value" -o tsv
+
+# --- Pour AZURE_CREDENTIALS ---
+# 1. Récupérer votre ID de souscription
+SUBSCRIPTION_ID=$(az account show --query id -o tsv)
+
+# 2. Définir le nom de votre groupe de ressources
+RESOURCE_GROUP="badbuzzresourcegroup"
+
+# 3. Créer le principal de service (copiez l'intégralité du JSON de sortie)
+az ad sp create-for-rbac --name "badbuzz-github-actions" --role contributor \
+                         --scopes /subscriptions/$SUBSCRIPTION_ID/resourceGroups/$RESOURCE_GROUP \
+                         --sdk-auth
 ```
 
 Les secrets `MODEL_URL` et `TOKENIZER_URL` sont obtenus en créant une **Release** sur votre dépôt GitHub et en copiant les URLs de téléchargement des fichiers de modèle et de tokenizer.
