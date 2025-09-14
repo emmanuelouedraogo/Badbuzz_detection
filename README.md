@@ -1,29 +1,37 @@
 # Détection de Bad Buzz 🧠✨
 
-[![CI/CD Pipeline](https://github.com/emmanuelouedraogo/badbuzz-detection/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/emmanuelouedraogo/badbuzz-detection/actions/workflows/ci-cd.yml)
+<p align="center">
+  <a href="https://github.com/emmanuelouedraogo/badbuzz-detection/actions/workflows/ci-cd.yml"><img src="https://img.shields.io/github/actions/workflow/status/emmanuelouedraogo/badbuzz-detection/ci-cd.yml?branch=main&style=for-the-badge" alt="CI/CD Status"></a>
+  <img src="https://img.shields.io/badge/Python-3.12-blue.svg?style=for-the-badge&logo=python" alt="Python 3.12">
+  <img src="https://img.shields.io/badge/Linter-Ruff-purple.svg?style=for-the-badge" alt="Linter: Ruff">
+  <img src="https://img.shields.io/github/license/emmanuelouedraogo/badbuzz-detection?style=for-the-badge" alt="License">
+</p>
 
 Une application web complète pour l'analyse de sentiments, capable de classifier un texte en **Positif** ou **Négatif** à l'aide d'un modèle de Deep Learning. Ce projet est entièrement conteneurisé avec Docker et déployé automatiquement sur Azure via un pipeline CI/CD avec GitHub Actions.
 
-<!-- !Aperçu de l'application -->
+<p align="center">
+  <!-- Remplacer par une capture d'écran ou un GIF de l'application -->
+  <img src="https://raw.githubusercontent.com/emmanuelouedraogo/badbuzz-detection/main/.github/assets/app-preview.png" alt="Aperçu de l'application" width="70%">
+</p>
 
 ---
 
 ### Table des matières
 
-- À propos du projet
-- Stack Technologique
-- Architecture
-- Structure du projet
-- Démarrage rapide (Local)
-- Déploiement (CI/CD sur Azure)
-- Documentation de l'API
-- Contribuer
-- Licence
-- Contact
+- [🎯 À propos du projet](#-à-propos-du-projet)
+- [🛠️ Stack Technologique](#️-stack-technologique)
+- [🏗️ Architecture](#️-architecture)
+- [📂 Structure du projet](#-structure-du-projet)
+- [🚀 Démarrage rapide (Local)](#-démarrage-rapide-local)
+- [☁️ Déploiement (CI/CD sur Azure)](#️-déploiement-ci-cd-sur-azure)
+- [📚 Documentation de l'API](#-documentation-de-lapi)
+- [🤝 Contribuer](#-contribuer)
+- [📜 Licence](#-licence)
+- [✉️ Contact](#️-contact)
 
 ---
 
-## À propos du projet
+## 🎯 À propos du projet
 
 Ce projet met en œuvre une solution de détection de "bad buzz" en analysant le sentiment de textes fournis par l'utilisateur. Il est composé de deux services principaux :
 
@@ -32,16 +40,17 @@ Ce projet met en œuvre une solution de détection de "bad buzz" en analysant le
 
 L'ensemble du projet est conçu pour être robuste, scalable et facilement déployable grâce à la conteneurisation Docker et à un pipeline d'intégration et de déploiement continus (CI/CD).
 
-## Stack Technologique
+## 🛠️ Stack Technologique
 
-- **Backend**: Python, Flask, Gunicorn
-- **Frontend**: Streamlit
-- **Machine Learning**: TensorFlow/Keras, Gensim
-- **Conteneurisation**: Docker, Docker Compose
-- **CI/CD**: GitHub Actions
-- **Cloud & Hébergement**: Microsoft Azure (App Service, Container Registry)
+| Catégorie           | Technologies                                                              |
+| ------------------- | ------------------------------------------------------------------------- |
+| **Backend**         | <img src="https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=white"> <img src="https://img.shields.io/badge/Flask-000000?logo=flask&logoColor=white"> <img src="https://img.shields.io/badge/Gunicorn-499848?logo=gunicorn&logoColor=white"> |
+| **Frontend**        | <img src="https://img.shields.io/badge/Streamlit-FF4B4B?logo=streamlit&logoColor=white">                                                              |
+| **Machine Learning**| <img src="https://img.shields.io/badge/TensorFlow-FF6F00?logo=tensorflow&logoColor=white"> <img src="https://img.shields.io/badge/Keras-D00000?logo=keras&logoColor=white"> |
+| **Conteneurisation**| <img src="https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white">                                                                  |
+| **CI/CD & Cloud**   | <img src="https://img.shields.io/badge/GitHub_Actions-2088FF?logo=github-actions&logoColor=white"> <img src="https://img.shields.io/badge/Microsoft_Azure-0078D4?logo=microsoft-azure&logoColor=white"> |
 
-## Architecture
+## 🏗️ Architecture
 
 Le schéma ci-dessous illustre le flux de déploiement automatisé, du push sur GitHub jusqu'à la mise en production sur Azure App Service.
 
