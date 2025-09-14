@@ -59,7 +59,7 @@ def download_file_if_not_exists(filepath, url_env_var):
 
 
 # --- Flask App Initialization ---
-app = Flask(__name__)
+app = Flask(__name__)  # Create the Flask app instance
 
 
 def preprocess_text(text: str) -> np.ndarray:
