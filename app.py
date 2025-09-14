@@ -123,8 +123,16 @@ with app.app_context():
 
 @app.route("/health", methods=["GET"])
 def health_check():
-    """Health check endpoint to confirm the service is running."""
-    return jsonify({"status": "ok"}), 200
+    """Health check endpoint to confirm the service is running and the model is loaded."""
+    # A simple check to see if the model and tokenizer objects exist
+    if model is not None and tokenizer is not None:
+        return jsonify({"status": "healthy"}), 200
+    else:
+        logging.error("Health check failed: model or tokenizer not loaded.")
+        return (
+            jsonify({"status": "unhealthy", "reason": "Model or tokenizer not loaded"}),
+            503,
+        )
 
 
 @app.route("/predict", methods=["POST"])

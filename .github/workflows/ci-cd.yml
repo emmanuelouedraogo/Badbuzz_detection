@@ -99,3 +99,44 @@ jobs:
         file: ./frontend.Dockerfile
         push: true
         tags: ${{ secrets.ACR_LOGIN_SERVER }}/badbuzz-frontend:latest,${{ secrets.ACR_LOGIN_SERVER }}/badbuzz-frontend:${{ github.sha }}
+
+  deploy-to-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    environment:
+      name: Staging
+      url: https://badbuzz-webapp-staging.azurewebsites.net
+    steps:
+      - name: 'Deploy to Azure Web App (Staging Slot)'
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: 'badbuzz-webapp'
+          slot-name: 'staging'
+          # Les images ont déjà été poussées dans le job précédent.
+          # Azure App Service va automatiquement pull les images 'latest'.
+
+  approve-for-production:
+    name: Approve for Production
+    runs-on: ubuntu-latest
+    needs: deploy-to-staging
+    environment:
+      name: Production
+    steps:
+      - name: Manual approval before production swap
+        run: echo "After verifying the staging slot, click 'Resume workflow' to swap to production."
+
+  swap-to-production:
+    name: Swap Staging to Production
+    runs-on: ubuntu-latest
+    needs: approve-for-production
+    steps:
+      - name: 'Login via Azure CLI'
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }} # Vous devrez créer ce secret
+
+      - name: 'Swap Staging to Production'
+        run: |
+          az webapp deployment slot swap --name badbuzz-webapp \
+            --resource-group badbuzzresourcegroup --slot staging --target-slot production

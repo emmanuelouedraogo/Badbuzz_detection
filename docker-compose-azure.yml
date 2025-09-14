@@ -12,3 +12,6 @@ services:
     image: badbuzzacr.azurecr.io/badbuzz-api:latest
     ports:
       - "5000"
+    environment:
+      - LOG_LEVEL=INFO
+      - WEBSITES_CONTAINER_START_TIME_LIMIT=600

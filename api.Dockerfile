@@ -40,12 +40,12 @@ RUN useradd --create-home appuser
 USER appuser
 
 # Copy virtual env and models from builder stage
-COPY --from=builder /opt/venv /opt/venv
-COPY --from=builder /app/saved_model /app/saved_model
-COPY --from=builder /app/tokenizer.pickle /app/tokenizer.pickle
+COPY --chown=appuser:appuser --from=builder /opt/venv /opt/venv
+COPY --chown=appuser:appuser --from=builder /app/saved_model /app/saved_model
+COPY --chown=appuser:appuser --from=builder /app/tokenizer.pickle /app/tokenizer.pickle
 
 # Copy the application's source code
-COPY app.py .
+COPY --chown=appuser:appuser app.py .
 
 # Activate the virtual environment
 ENV PATH="/opt/venv/bin:$PATH"
@@ -54,4 +54,4 @@ ENV PATH="/opt/venv/bin:$PATH"
 EXPOSE 5000
 
 # Run the application using Gunicorn (production server)
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "2", "--threads", "4", "--timeout", "600", "--preload", "app:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "2", "--threads", "4", "--timeout", "600", "app:app"]
