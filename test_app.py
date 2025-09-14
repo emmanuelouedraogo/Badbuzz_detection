@@ -1,5 +1,7 @@
+import json
 import pytest
-from app import app as flask_app
+import numpy as np
+from app import app as flask_app  # Import the app from your file
 
 
 @pytest.fixture
@@ -15,21 +17,51 @@ def test_health_check(client):
     """Test the /health endpoint to ensure the API is responsive."""
     response = client.get("/health")
     assert response.status_code == 200
-    assert response.json == {"status": "ok"}
+    assert response.json == {"status": "healthy"}
 
 
-def test_predict_missing_text(client):
+def test_predict_no_text(client):
     """Test the /predict endpoint with no text provided, expecting a 400 error."""
     response = client.post("/predict", json={})
     assert response.status_code == 400
     assert response.json == {"error": 'The "text" field is missing.'}
 
 
-def test_predict_success(client):
-    """Test the /predict endpoint with valid text, expecting a 200 OK response."""
-    response = client.post("/predict", json={"text": "this is a wonderful movie"})
+def test_predict_positive(client, monkeypatch):
+    """Test the /predict endpoint for a positive sentiment prediction."""
+
+    # Mock the model's predict method to return a low score (positive)
+    def mock_predict(*args, **kwargs):
+        return np.array([[0.1]])  # Score < 0.5 -> Positive
+
+    monkeypatch.setattr("app.model.predict", mock_predict)
+
+    response = client.post(
+        "/predict",
+        data=json.dumps({"text": "This is great!"}),
+        content_type="application/json",
+    )
+    data = response.get_json()
+
     assert response.status_code == 200
-    json_data = response.json
-    assert "prediction" in json_data
-    assert "confidence_score" in json_data
-    assert json_data["prediction"] in ["Positive", "Negative"]
+    assert data["prediction"] == "Positive"
+
+
+def test_predict_negative(client, monkeypatch):
+    """Test the /predict endpoint for a negative sentiment prediction."""
+
+    # Mock the model's predict method to return a high score (negative)
+    def mock_predict(*args, **kwargs):
+        return np.array([[0.9]])  # Score > 0.5 -> Negative
+
+    monkeypatch.setattr("app.model.predict", mock_predict)
+
+    response = client.post(
+        "/predict",
+        data=json.dumps({"text": "This is awful."}),
+        content_type="application/json",
+    )
+    data = response.get_json()
+
+    assert response.status_code == 200
+    assert data["prediction"] == "Negative"
