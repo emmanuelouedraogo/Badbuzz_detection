@@ -302,7 +302,7 @@ Les contributions sont ce qui rend la communauté open source un endroit incroya
 
 ## 📜 Licence
 
-Distribué sous la licence KAIZOAPPS. Voir `LICENSE` for for more information.
+Distribué sous la licence KAIZO. Voir `LICENSE` for for more information.
 
 ## ✉️ Contact
 
