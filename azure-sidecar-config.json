@@ -1,3 +1,0 @@
-{
-  "linuxFxVersion": "[{\"name\":\"frontend\",\"image\":\"badbuzzacr.azurecr.io/badbuzz-frontend:latest\",\"ports\":[{\"containerPort\":8501}],\"environmentVariables\":[{\"name\":\"API_URL\",\"value\":\"http://localhost:5000/predict\"},{\"name\":\"WEBSITES_PORT\",\"value\":\"8501\"}]},{\"name\":\"api\",\"image\":\"badbuzzacr.azurecr.io/badbuzz-api:latest\",\"ports\":[{\"containerPort\":5000}]}]"
-}

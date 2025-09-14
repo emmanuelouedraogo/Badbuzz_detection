@@ -87,12 +87,13 @@ badbuzz_detection/
 ├── .gitignore                         # Fichiers à ignorer par Git
 ├── api.Dockerfile                     # Instructions pour construire l'image de l'API
 ├── app.py                             # Code source de l'API Flask
-├── azure-sidecar-config.json          # Configuration pour Azure App Service (Sidecar)
+├── docker-compose-azure.yml           # Composition pour le déploiement sur Azure
 ├── docker-compose.yml                 # Composition pour le développement local
 ├── frontend.Dockerfile                # Instructions pour construire l'image du frontend
 ├── README.md                          # Ce fichier
 ├── requirements-dev.txt               # Dépendances pour le développement et les tests
-├── requirements.txt                   # Dépendances de production (API & Frontend)
+├── requirements.txt                   # Dépendances de production (API)
+├── requirements-frontend.txt          # Dépendances de production (Frontend)
 ├── streamlit_app.py                   # Code source du frontend Streamlit
 └── test_app.py                        # Tests unitaires pour l'API
 ```
@@ -215,8 +216,9 @@ LOCATION="westeurope"
     ```
 
 3. **Créer le plan App Service :**
+    *(Note : Le plan `S1` (Standard) est requis pour utiliser les slots de déploiement. Le plan `B1` n'est pas suffisant.)*
     ```bash
-    az appservice plan create --name $APP_SERVICE_PLAN --resource-group $RESOURCE_GROUP --sku B1 --is-linux
+    az appservice plan create --name $APP_SERVICE_PLAN --resource-group $RESOURCE_GROUP --sku S1 --is-linux
     ```
 
 4. **Créer l'application web :**
@@ -225,7 +227,14 @@ LOCATION="westeurope"
     az webapp create --resource-group $RESOURCE_GROUP --plan $APP_SERVICE_PLAN --name $WEBAPP_NAME --deployment-container-image-name nginx
     ```
 
-5. **Configurer les conteneurs (multi-conteneurs) :**
+5. **Créer le slot de déploiement "staging" :**
+    *(Cet environnement de pré-production est utilisé par le pipeline CI/CD pour tester les changements avant la mise en production.)*
+
+    ```bash
+    az webapp deployment slot create --name $WEBAPP_NAME --resource-group $RESOURCE_GROUP --slot staging
+    ```
+
+6. **Configurer les conteneurs (multi-conteneurs) :**
     *(Cette commande utilise le fichier `docker-compose-azure.yml` pour configurer les conteneurs. Créez ce fichier s'il n'existe pas, en vous basant sur la section "Architecture".)*
     ```bash
     az webapp config container set --name $WEBAPP_NAME \
@@ -234,7 +243,7 @@ LOCATION="westeurope"
         --multicontainer-config-file docker-compose-azure.yml
     ```
 
-6. **Configurer la connexion à l'ACR :**
+7. **Configurer la connexion à l'ACR :**
     *(Cette commande définit le mot de passe pour que l'App Service puisse télécharger les images)*
     ```bash
     # Récupérer les informations de l'ACR dans des variables
@@ -250,7 +259,7 @@ LOCATION="westeurope"
                    DOCKER_REGISTRY_SERVER_PASSWORD="$ACR_PASSWORD"
     ```
 
-7. **Activer le déploiement continu (CD) :**
+8. **Activer le déploiement continu (CD) :**
 
     ```bash
     az webapp deployment container config --enable-cd true --name $WEBAPP_NAME --resource-group $RESOURCE_GROUP
@@ -326,4 +335,4 @@ Emmanuel OUEDRAOGO - <emmanuelrhema.amjc@gmail.com>
 
 Lien du projet : <https://github.com/emmanuelouedraogo/badbuzz-detection>
 
-Epikaizo
+@Epikaizo
