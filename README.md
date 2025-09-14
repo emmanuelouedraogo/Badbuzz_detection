@@ -212,10 +212,13 @@ LOCATION="westeurope"
     az webapp create --resource-group $RESOURCE_GROUP --plan $APP_SERVICE_PLAN --name $WEBAPP_NAME --deployment-container-image-name nginx
     ```
 
-5. **Configurer les conteneurs (sidecar) :**
-    *(Cette commande utilise le fichier `azure-sidecar-config.json` pour configurer les conteneurs)*
+5. **Configurer les conteneurs (multi-conteneurs) :**
+    *(Cette commande utilise le fichier `docker-compose-azure.yml` pour configurer les conteneurs. Créez ce fichier s'il n'existe pas, en vous basant sur la section "Architecture".)*
     ```bash
-    az webapp config set --resource-group $RESOURCE_GROUP --name $WEBAPP_NAME --generic-configurations "@azure-sidecar-config.json"
+    az webapp config container set --name $WEBAPP_NAME \
+        --resource-group $RESOURCE_GROUP \
+        --multicontainer-config-type compose \
+        --multicontainer-config-file docker-compose-azure.yml
     ```
 
 6. **Configurer la connexion à l'ACR :**
@@ -229,9 +232,9 @@ LOCATION="westeurope"
     # Configurer l'App Service avec ces variables
     az webapp config container set --name $WEBAPP_NAME \
         --resource-group $RESOURCE_GROUP \
-        --container-registry-url "$ACR_URL" \
-        --container-registry-user "$ACR_USER" \
-        --container-registry-password "$ACR_PASSWORD"
+        --settings DOCKER_REGISTRY_SERVER_URL="$ACR_URL" \
+                   DOCKER_REGISTRY_SERVER_USERNAME="$ACR_USER" \
+                   DOCKER_REGISTRY_SERVER_PASSWORD="$ACR_PASSWORD"
     ```
 
 7. **Activer le déploiement continu (CD) :**
