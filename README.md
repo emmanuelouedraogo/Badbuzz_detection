@@ -148,55 +148,87 @@ Allez dans les paramètres de votre dépôt GitHub (`Settings > Secrets and vari
 - `MODEL_URL` : L'URL de téléchargement de votre modèle `.keras`.
 - `TOKENIZER_URL` : L'URL de téléchargement de votre tokenizer `.pickle`.
 
+#### Récupération des valeurs pour les secrets
+
+Une fois l'infrastructure créée (étape 2 ci-dessous), vous pouvez récupérer les valeurs pour les secrets `ACR_*` avec les commandes suivantes dans le Cloud Shell :
+
+```bash
+# Assurez-vous que la variable ACR_NAME est définie avec le nom que vous avez choisi
+ACR_NAME="badbuzzacr"
+
+# Pour ACR_LOGIN_SERVER
+az acr show --name $ACR_NAME --query loginServer -o tsv
+
+# Pour ACR_USERNAME
+az acr credential show --name $ACR_NAME --query username -o tsv
+
+# Pour ACR_PASSWORD
+az acr credential show --name $ACR_NAME --query "passwords[0].value" -o tsv
+```
+
+Les secrets `MODEL_URL` et `TOKENIZER_URL` sont obtenus en créant une **Release** sur votre dépôt GitHub et en copiant les URLs de téléchargement des fichiers de modèle et de tokenizer.
+
 ### Étape 2 : Création de l'infrastructure sur Azure
 
-Utilisez le **Cloud Shell** sur le portail Azure pour exécuter les commandes suivantes.
+Utilisez le **Cloud Shell** sur le portail Azure pour exécuter les commandes suivantes. Pour rendre les commandes réutilisables et plus faciles à gérer, nous définissons d'abord les noms de nos ressources dans des variables.
+
+```bash
+# --- Définir les variables pour les noms de ressources ---
+# (Modifiez ces valeurs si vous utilisez des noms différents)
+RESOURCE_GROUP="badbuzzresourcegroup"
+ACR_NAME="badbuzzacr"
+APP_SERVICE_PLAN="badbuzzappserviceplan"
+WEBAPP_NAME="badbuzz-webapp"
+LOCATION="westeurope"
+```
 
 1. **Créer le groupe de ressources :**
-
     ```bash
-    az group create --name badbuzzresourcegroup --location "West Europe"
+    az group create --name $RESOURCE_GROUP --location $LOCATION
     ```
 
 2. **Créer le registre de conteneurs (ACR) :**
-    *(Choisissez un nom unique et **en minuscules** pour `badbuzzacr`)*
-
     ```bash
-    az acr create --resource-group badbuzzresourcegroup --name badbuzzacr --sku Basic --admin-enabled true
+    az acr create --resource-group $RESOURCE_GROUP --name $ACR_NAME --sku Basic --admin-enabled true
     ```
 
 3. **Créer le plan App Service :**
-
     ```bash
-    az appservice plan create --name badbuzzappserviceplan --resource-group badbuzzresourcegroup --sku B1 --is-linux
+    az appservice plan create --name $APP_SERVICE_PLAN --resource-group $RESOURCE_GROUP --sku B1 --is-linux
     ```
 
 4. **Créer l'application web :**
     *(Nous utilisons une image placeholder comme `nginx` qui sera immédiatement remplacée)*
     ```bash
-    az webapp create --resource-group badbuzzresourcegroup --plan badbuzzappserviceplan --name badbuzz-webapp --deployment-container-image-name nginx
+    az webapp create --resource-group $RESOURCE_GROUP --plan $APP_SERVICE_PLAN --name $WEBAPP_NAME --deployment-container-image-name nginx
     ```
 
 5. **Configurer les conteneurs (sidecar) :**
     *(Cette commande utilise le fichier `azure-sidecar-config.json` pour configurer les conteneurs)*
     ```bash
-    az webapp config set --resource-group badbuzzresourcegroup --name badbuzz-webapp --generic-configurations "@azure-sidecar-config.json"
+    az webapp config set --resource-group $RESOURCE_GROUP --name $WEBAPP_NAME --generic-configurations "@azure-sidecar-config.json"
     ```
 
 6. **Configurer la connexion à l'ACR :**
+    *(Cette commande définit le mot de passe pour que l'App Service puisse télécharger les images)*
     ```bash
-    az webapp config container set \
-        --name badbuzz-webapp \
-        --resource-group badbuzzresourcegroup \
-        --docker-registry-server-url "https://$(az acr show --name badbuzzacr --query loginServer -o tsv)" \
-        --docker-registry-server-user "$(az acr credential show --name badbuzzacr --query username -o tsv)" \
-        --docker-registry-server-password "$(az acr credential show --name badbuzzacr --query passwords[0].value -o tsv)"
+    # Récupérer les informations de l'ACR dans des variables
+    ACR_URL="https://$(az acr show --name $ACR_NAME --query loginServer -o tsv)"
+    ACR_USER=$(az acr credential show --name $ACR_NAME --query username -o tsv)
+    ACR_PASSWORD=$(az acr credential show --name $ACR_NAME --query "passwords[0].value" -o tsv)
+
+    # Configurer l'App Service avec ces variables
+    az webapp config container set --name $WEBAPP_NAME \
+        --resource-group $RESOURCE_GROUP \
+        --container-registry-url "$ACR_URL" \
+        --container-registry-user "$ACR_USER" \
+        --container-registry-password "$ACR_PASSWORD"
     ```
 
 7. **Activer le déploiement continu (CD) :**
 
     ```bash
-    az webapp deployment container config --enable-cd true --name badbuzz-webapp --resource-group badbuzzresourcegroup
+    az webapp deployment container config --enable-cd true --name $WEBAPP_NAME --resource-group $RESOURCE_GROUP
     ```
 
 ### Étape 3 : Déclencher le déploiement
@@ -261,7 +293,7 @@ Les contributions sont ce qui rend la communauté open source un endroit incroya
 
 ## 📜 Licence
 
-Distribué sous la licence KAIZO. Voir `LICENSE` for for more information.
+Distribué sous la licence KAIZOAPPS. Voir `LICENSE` for for more information.
 
 ## ✉️ Contact
 
