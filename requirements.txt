@@ -1,7 +1,6 @@
 flask
 tensorflow-cpu
 numpy
-requests
 gensim
 gunicorn
 python-dotenv

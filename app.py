@@ -9,7 +9,6 @@ import logging
 import numpy as np
 from flask import Flask, request, jsonify
 import pickle
-import requests
 from dotenv import load_dotenv
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.keras.saving import load_model
