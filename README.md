@@ -265,6 +265,19 @@ LOCATION="westeurope"
     az webapp deployment container config --enable-cd true --name $WEBAPP_NAME --resource-group $RESOURCE_GROUP
     ```
 
+9. **(Optionnel) Activer HTTP/2.0 pour de meilleures performances :**
+
+    ```bash
+    az webapp config set --name $WEBAPP_NAME --resource-group $RESOURCE_GROUP --http20-enabled true
+    ```
+
+10. **(Important) Configurer le Health Check pour la stabilité des déploiements :**
+    *(Cette étape est cruciale pour que les déploiements multi-conteneurs réussissent, en particulier lors des "swaps".)*
+
+    ```bash
+    az webapp config set --name $WEBAPP_NAME --resource-group $RESOURCE_GROUP --generic-configurations '{"healthCheckPath": "/"}'
+    ```
+
 ### Étape 3 : Déclencher le déploiement
 
 Poussez simplement vos modifications sur la branche `main` de votre dépôt GitHub.

@@ -5,4 +5,3 @@ requests
 gensim
 gunicorn
 python-dotenv
-python-dotenv
