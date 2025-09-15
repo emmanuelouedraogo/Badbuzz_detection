@@ -278,12 +278,16 @@ LOCATION="westeurope"
     az webapp config set --name $WEBAPP_NAME --resource-group $RESOURCE_GROUP --generic-configurations '{"healthCheckPath": "/"}'
     ```
 
-11. **(Crucial) Augmenter le temps de démarrage des conteneurs :**
+11. **(Crucial) Augmenter le temps de démarrage des conteneurs sur les slots :**
     *(Cette étape évite les erreurs de "timeout" lors du déploiement, car le modèle de ML peut être long à charger.)*
 
-    Dans le portail Azure, allez dans votre App Service (`badbuzz-webapp`), puis dans `Configuration > Application settings`. Ajoutez le paramètre suivant et cochez la case "Deployment slot setting" :
-    - **Name** : `WEBSITES_CONTAINER_START_TIME_LIMIT`
-    - **Value** : `1800`
+    *(Note : si vous êtes dans un nouveau terminal, redéfinissez les variables `$WEBAPP_NAME` et `$RESOURCE_GROUP` avant d'exécuter ces commandes.)*
+
+    ```bash
+    # Appliquer sur le slot de production ET sur le slot de staging
+    az webapp config appsettings set --name $WEBAPP_NAME --resource-group $RESOURCE_GROUP --settings WEBSITES_CONTAINER_START_TIME_LIMIT=1800
+    az webapp config appsettings set --name $WEBAPP_NAME --resource-group $RESOURCE_GROUP --slot staging --settings WEBSITES_CONTAINER_START_TIME_LIMIT=1800
+    ```
 
 ### Étape 3 : Déclencher le déploiement
 
