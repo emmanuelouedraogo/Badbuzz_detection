@@ -34,6 +34,12 @@ jobs:
         # Install both production and development dependencies for the test job
         pip install -r requirements.txt -r requirements-dev.txt
 
+    - name: Download models for testing
+      run: |
+        mkdir -p saved_model
+        wget -O saved_model/best_gensim_bidirectional_gru_en_model.keras ${{ secrets.MODEL_URL }}
+        wget -O tokenizer.pickle ${{ secrets.TOKENIZER_URL }}
+
     - name: Lint and Format Check with Ruff
       run: |
         echo "--- Checking for style and quality issues with 'ruff check' ---"

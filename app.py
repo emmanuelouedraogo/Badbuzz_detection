@@ -28,36 +28,6 @@ TOKENIZER_PATH = "tokenizer.pickle"
 MAX_SEQUENCE_LENGTH = 200  # IMPORTANT: Must be the same value used during training
 
 
-# --- Helper function to download model/tokenizer if they don't exist ---
-def download_file_if_not_exists(filepath, url_env_var):
-    """Downloads a file from a URL if it doesn't exist locally."""
-    if not os.path.exists(filepath):
-        url = os.getenv(url_env_var)
-        if url:
-            logging.info(f"File '{filepath}' not found. Downloading from {url}...")
-            try:
-                # Ensure directory exists, even if filepath is just a filename
-                os.makedirs(os.path.dirname(filepath) or ".", exist_ok=True)
-                with requests.get(url, stream=True) as r:
-                    r.raise_for_status()
-                    with open(filepath, "wb") as f:
-                        for chunk in r.iter_content(chunk_size=8192):
-                            f.write(chunk)
-                logging.info(f"Successfully downloaded '{filepath}'.")
-            except Exception as e:
-                logging.error(f"Failed to download file from {url}. Error: {e}")
-                raise RuntimeError(
-                    f"Failed to download required file from {url}."
-                ) from e
-        else:
-            logging.error(
-                f"File '{filepath}' not found and no download URL ('{url_env_var}') provided in .env file."
-            )
-            raise RuntimeError(
-                f"Missing environment variable for download: {url_env_var}"
-            )
-
-
 # --- Flask App Initialization ---
 app = Flask(__name__)  # Create the Flask app instance
 
@@ -80,12 +50,6 @@ def preprocess_text(text: str) -> np.ndarray:
 
 
 # --- Model & Tokenizer Loading ---
-# Ensure directories exist before any operation
-os.makedirs(os.path.dirname(MODEL_PATH) or ".", exist_ok=True)
-os.makedirs(os.path.dirname(TOKENIZER_PATH) or ".", exist_ok=True)
-
-download_file_if_not_exists(MODEL_PATH, "MODEL_URL")
-download_file_if_not_exists(TOKENIZER_PATH, "TOKENIZER_URL")
 
 # These objects are loaded once at startup for better performance.
 logging.info("Loading Keras model...")
