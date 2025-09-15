@@ -278,7 +278,12 @@ Le pipeline GitHub Actions va automatiquement :
 1. Lancer les tests.
 2. Construire les images Docker.
 3. Pousser les images sur votre Azure Container Registry.
-4. Azure App Service détectera les nouvelles images et mettra à jour l'application.
+4. r
+Un e fois l'application validée en production, augmentez le nombre d'instances pour garantir une haute disponibilité et éviter les interruptions de service.
+
+```bash
+az webapp config set --name $WEBAPP_NAME --resource-group $RESOURCE_GROUP --number-of-workers 2
+```
 
 Votre application sera accessible après quelques minutes à l'adresse `http://badbuzz-webapp.azurewebsites.net`.
 

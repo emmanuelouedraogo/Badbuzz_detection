@@ -1,7 +1,8 @@
 flask
 tensorflow-cpu
 numpy
-streamlit
 requests
 gensim
 gunicorn
+python-dotenv
+python-dotenv
