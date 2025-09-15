@@ -252,7 +252,7 @@ LOCATION="westeurope"
     ACR_PASSWORD=$(az acr credential show --name $ACR_NAME --query "passwords[0].value" -o tsv)
 
     # Configurer l'App Service avec ces variables
-    az webapp config container set --name $WEBAPP_NAME \
+    az webapp config appsettings set --name $WEBAPP_NAME \
         --resource-group $RESOURCE_GROUP \
         --settings DOCKER_REGISTRY_SERVER_URL="$ACR_URL" \
                    DOCKER_REGISTRY_SERVER_USERNAME="$ACR_USER" \
@@ -278,6 +278,13 @@ LOCATION="westeurope"
     az webapp config set --name $WEBAPP_NAME --resource-group $RESOURCE_GROUP --generic-configurations '{"healthCheckPath": "/"}'
     ```
 
+11. **(Crucial) Augmenter le temps de démarrage des conteneurs :**
+    *(Cette étape évite les erreurs de "timeout" lors du déploiement, car le modèle de ML peut être long à charger.)*
+
+    Dans le portail Azure, allez dans votre App Service (`badbuzz-webapp`), puis dans `Configuration > Application settings`. Ajoutez le paramètre suivant et cochez la case "Deployment slot setting" :
+    - **Name** : `WEBSITES_CONTAINER_START_TIME_LIMIT`
+    - **Value** : `1800`
+
 ### Étape 3 : Déclencher le déploiement
 
 Poussez simplement vos modifications sur la branche `main` de votre dépôt GitHub.
@@ -291,8 +298,12 @@ Le pipeline GitHub Actions va automatiquement :
 1. Lancer les tests.
 2. Construire les images Docker.
 3. Pousser les images sur votre Azure Container Registry.
-4. r
-Un e fois l'application validée en production, augmentez le nombre d'instances pour garantir une haute disponibilité et éviter les interruptions de service.
+4. Déployer sur l'environnement de pré-production (`staging`).
+5. Après votre approbation manuelle, basculer vers la production.
+
+### Étape 4 : Améliorer la résilience (Optionnel mais recommandé)
+
+Une fois l'application validée en production, augmentez le nombre d'instances pour garantir une haute disponibilité et éviter les interruptions de service.
 
 ```bash
 az webapp config set --name $WEBAPP_NAME --resource-group $RESOURCE_GROUP --number-of-workers 2
