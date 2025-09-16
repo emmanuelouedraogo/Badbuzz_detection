@@ -74,3 +74,14 @@ def test_predict_negative(client, monkeypatch):
 
     assert response.status_code == 200
     assert data["prediction"] == "Negative"
+
+
+def test_predict_no_text(client):
+    """Test the /predict endpoint when no text is provided."""
+    response = client.post(
+        "/predict", data=json.dumps({}), content_type="application/json"
+    )
+    assert response.status_code == 400
+    data = response.get_json()
+    assert "error" in data
+    assert data["error"] == 'The "text" field is missing.'
