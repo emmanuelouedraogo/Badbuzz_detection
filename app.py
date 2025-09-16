@@ -6,7 +6,6 @@ import os
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
 import logging
-import numpy as np
 from flask import Flask, request, jsonify
 import pickle
 from tensorflow.keras.preprocessing.sequence import pad_sequences
