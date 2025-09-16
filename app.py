@@ -68,18 +68,6 @@ except Exception as e:
     logging.error(f"Error loading tokenizer: {e}")
     raise RuntimeError("Could not load tokenizer pickle file.") from e
 
-# --- Warm-up the model on startup ---
-# The first prediction is always slow, so we do a dummy one at startup.
-with app.app_context():
-    logging.info("Warming up the model...")
-    try:
-        dummy_text = "This is a warm-up sentence."
-        processed_text = preprocess_text(dummy_text)
-        model.predict(processed_text, verbose=0)
-        logging.info("Model is warmed up and ready.")
-    except Exception as e:
-        logging.error(f"An error occurred during model warm-up: {e}")
-
 
 @app.route("/health", methods=["GET"])
 def health_check():
