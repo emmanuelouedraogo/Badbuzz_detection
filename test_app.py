@@ -43,7 +43,7 @@ def test_predict_positive(client, monkeypatch):
     def mock_predict_proba(*args, **kwargs):
         return np.array([[0.1, 0.9]])  # [P(neg), P(pos)]
 
-    monkeypatch.setattr(flask_app.model, "predict_proba", mock_predict_proba)
+    monkeypatch.setattr("app.model.predict_proba", mock_predict_proba)
 
     response = client.post(
         "/predict",
@@ -63,7 +63,7 @@ def test_predict_negative(client, monkeypatch):
     def mock_predict_proba(*args, **kwargs):
         return np.array([[0.9, 0.1]])  # [P(neg), P(pos)]
 
-    monkeypatch.setattr(flask_app.model, "predict_proba", mock_predict_proba)
+    monkeypatch.setattr("app.model.predict_proba", mock_predict_proba)
 
     response = client.post(
         "/predict",
