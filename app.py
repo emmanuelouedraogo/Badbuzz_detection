@@ -28,45 +28,23 @@ MAX_SEQUENCE_LENGTH = 200  # IMPORTANT: Must be the same value used during train
 app = Flask(__name__)  # Create the Flask app instance
 
 
-def preprocess_text(text: str) -> np.ndarray:
-    """
-    Preprocesses raw text to be compatible with the model.
-    1. Tokenizes the text
-    2. Converts to a sequence of integers
-    3. Applies padding
-    """
-    if not tokenizer:
-        # This check is now redundant due to sys.exit() on load failure, but good for safety
-        raise RuntimeError("Tokenizer is not available.")
-
-    sequences = tokenizer.texts_to_sequences([text])
-    padded_sequence = pad_sequences(sequences, maxlen=MAX_SEQUENCE_LENGTH)
-
-    return padded_sequence
+# --- Global variables for lazy loading ---
+model = None
+tokenizer = None
 
 
-# --- Model & Tokenizer Loading ---
-
-# These objects are loaded once at startup for better performance.
-logging.info("Loading Keras model...")
-try:
-    model = load_model(MODEL_PATH)
-    logging.info("Model loaded successfully.")
-except Exception as e:
-    logging.error(f"Error loading model from {MODEL_PATH}: {e}")
-    raise RuntimeError(f"Could not load Keras model from {MODEL_PATH}.") from e
-
-logging.info("Loading tokenizer...")
-try:
-    with open(TOKENIZER_PATH, "rb") as handle:
-        tokenizer = pickle.load(handle)
-    logging.info("Tokenizer loaded successfully.")
-except FileNotFoundError:
-    logging.error(f"Error: Tokenizer file not found at '{TOKENIZER_PATH}'.")
-    raise RuntimeError(f"Tokenizer file not found at {TOKENIZER_PATH}.")
-except Exception as e:
-    logging.error(f"Error loading tokenizer: {e}")
-    raise RuntimeError("Could not load tokenizer pickle file.") from e
+def load_resources():
+    """Load the model and tokenizer into global variables if they haven't been already."""
+    global model, tokenizer
+    if model is None:
+        logging.info("Lazy loading Keras model...")
+        model = load_model(MODEL_PATH)
+        logging.info("Model loaded.")
+    if tokenizer is None:
+        logging.info("Lazy loading tokenizer...")
+        with open(TOKENIZER_PATH, "rb") as handle:
+            tokenizer = pickle.load(handle)
+        logging.info("Tokenizer loaded.")
 
 
 @app.route("/health", methods=["GET"])
@@ -86,6 +64,9 @@ def health_check():
 @app.route("/predict", methods=["POST"])
 def predict():
     """Endpoint for sentiment prediction."""
+    # Lazy load resources on the first request
+    load_resources()
+
     try:
         data = request.get_json(force=True)
         text = data.get("text", "")
@@ -95,7 +76,8 @@ def predict():
             return jsonify({"error": 'The "text" field is missing.'}), 400
 
         # Preprocess the text
-        processed_text = preprocess_text(text)
+        sequences = tokenizer.texts_to_sequences([text])
+        processed_text = pad_sequences(sequences, maxlen=MAX_SEQUENCE_LENGTH)
 
         # Prediction
         prediction_score = model.predict(processed_text, verbose=0)[0][0]
