@@ -42,13 +42,11 @@ RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 RUN useradd --create-home appuser
 USER appuser
 
-# Copy virtual env and models from builder stage
+# Copy virtual env, application code, and models from builder stage
 COPY --chown=appuser:appuser --from=builder /opt/venv /opt/venv
-COPY --chown=appuser:appuser --from=builder /app/saved_model /app/saved_model
-COPY --chown=appuser:appuser --from=builder /app/best_vectorizer.pkl /app/best_vectorizer.pkl
-
-# Copy the application's source code
 COPY --chown=appuser:appuser app.py .
+COPY --chown=appuser:appuser --from=builder /app/saved_model ./saved_model/
+COPY --chown=appuser:appuser --from=builder /app/best_vectorizer.pkl .
 
 # Activate the virtual environment
 ENV PATH="/opt/venv/bin:$PATH"
@@ -56,5 +54,5 @@ ENV PATH="/opt/venv/bin:$PATH"
 # Make port 5000 available to the world outside this container
 EXPOSE 5000
 
-# Run the application using Gunicorn (production server)
+# Run the application using Waitress (production server)
 CMD ["waitress-serve", "--host=0.0.0.0", "--port=5000", "app:app"]
