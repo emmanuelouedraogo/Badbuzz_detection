@@ -76,12 +76,10 @@ def test_predict_negative(client, monkeypatch):
     assert data["prediction"] == "Negative"
 
 
-def test_predict_no_text(client):
+def test_predict_no_text(client, monkeypatch):
     """Test the /predict endpoint when no text is provided."""
-    response = client.post(
-        "/predict", data=json.dumps({}), content_type="application/json"
-    )
+    # Mock the model to avoid loading it for this simple validation test.
+    monkeypatch.setattr("app.model", "mock_model")
+    response = client.post("/predict", json={})
     assert response.status_code == 400
-    data = response.get_json()
-    assert "error" in data
-    assert data["error"] == 'The "text" field is missing.'
+    assert response.json == {"error": 'The "text" field is missing.'}
