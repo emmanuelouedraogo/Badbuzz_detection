@@ -46,18 +46,19 @@ def load_resources():
         logging.info("Tokenizer loaded.")
 
 
+@app.route("/", methods=["GET"])
+def index():
+    """Root endpoint to provide a simple status message."""
+    return jsonify({"message": "Bad Buzz Detection API is running."}), 200
+
+
 @app.route("/health", methods=["GET"])
 def health_check():
-    """Health check endpoint to confirm the service is running and the model is loaded."""
-    # A simple check to see if the model and tokenizer objects exist
-    if model is not None and tokenizer is not None:
-        return jsonify({"status": "healthy"}), 200
-    else:
-        logging.error("Health check failed: model or tokenizer not loaded.")
-        return (
-            jsonify({"status": "unhealthy", "reason": "Model or tokenizer not loaded"}),
-            503,
-        )
+    """Health check endpoint to confirm the service is running."""
+    # This endpoint should be lightweight and only confirm that the server process is alive.
+    # The actual model loading is handled lazily by the /predict endpoint.
+    # A failed health check here would mean the web server (e.g., Waitress) is down.
+    return jsonify({"status": "ok"}), 200
 
 
 @app.route("/predict", methods=["POST"])
