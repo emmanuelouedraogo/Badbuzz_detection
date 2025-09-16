@@ -1,7 +1,7 @@
 import json
 import pytest
 import numpy as np
-from app import app as flask_app  # Import the app from your file
+from app import app as flask_app, load_resources  # Import the app and loader
 
 
 @pytest.fixture
@@ -14,7 +14,11 @@ def app():
 @pytest.fixture
 def client(app):
     """A test client for the app."""
-    return app.test_client()
+    # Eagerly load model and tokenizer for testing purposes
+    with app.app_context():
+        load_resources()
+    with app.test_client() as client:
+        yield client
 
 
 def test_predict_positive(client, monkeypatch):
