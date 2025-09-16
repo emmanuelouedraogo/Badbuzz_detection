@@ -2,7 +2,6 @@
 import streamlit as st
 import requests
 import os
-from dotenv import load_dotenv
 
 # --- Page Configuration ---
 st.set_page_config(
@@ -33,8 +32,6 @@ st.markdown(
 )
 
 # --- API Configuration ---
-load_dotenv()
-
 # The URL for the Flask API is loaded from an environment variable.
 # For local development, it's set in the .env file.
 # For Docker, it will be set in docker-compose.yml.

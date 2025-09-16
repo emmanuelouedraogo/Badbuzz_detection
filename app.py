@@ -9,13 +9,10 @@ import logging
 import numpy as np
 from flask import Flask, request, jsonify
 import pickle
-from dotenv import load_dotenv
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.keras.saving import load_model
 
 # --- Configuration & Logging ---
-load_dotenv()
-
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
