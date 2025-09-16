@@ -39,11 +39,11 @@ def test_root_endpoint(client):
 def test_predict_positive(client, monkeypatch):
     """Test the /predict endpoint for a positive sentiment prediction."""
 
-    # Mock the model's predict method to return a low score (positive)
-    def mock_predict(*args, **kwargs):
-        return np.array([[0.1]])  # Score < 0.5 -> Positive
+    # Mock the model's predict_proba method to return a high positive score
+    def mock_predict_proba(*args, **kwargs):
+        return np.array([[0.1, 0.9]])  # [P(neg), P(pos)]
 
-    monkeypatch.setattr("app.model.predict", mock_predict)
+    monkeypatch.setattr("app.model.predict_proba", mock_predict_proba)
 
     response = client.post(
         "/predict",
@@ -59,11 +59,11 @@ def test_predict_positive(client, monkeypatch):
 def test_predict_negative(client, monkeypatch):
     """Test the /predict endpoint for a negative sentiment prediction."""
 
-    # Mock the model's predict method to return a high score (negative)
-    def mock_predict(*args, **kwargs):
-        return np.array([[0.9]])  # Score > 0.5 -> Negative
+    # Mock the model's predict_proba method to return a low positive score
+    def mock_predict_proba(*args, **kwargs):
+        return np.array([[0.9, 0.1]])  # [P(neg), P(pos)]
 
-    monkeypatch.setattr("app.model.predict", mock_predict)
+    monkeypatch.setattr("app.model.predict_proba", mock_predict_proba)
 
     response = client.post(
         "/predict",
@@ -78,8 +78,9 @@ def test_predict_negative(client, monkeypatch):
 
 def test_predict_no_text(client, monkeypatch):
     """Test the /predict endpoint when no text is provided."""
-    # Mock the model to avoid loading it for this simple validation test.
-    monkeypatch.setattr("app.model", "mock_model")
+    # Mock the vectorizer to avoid loading it for this simple validation test.
+    # The model won't be loaded if the text is empty.
+    monkeypatch.setattr("app.vectorizer", "mock_vectorizer")
     response = client.post("/predict", json={})
     assert response.status_code == 400
     assert response.json == {"error": 'The "text" field is missing.'}

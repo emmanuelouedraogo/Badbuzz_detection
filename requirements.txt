@@ -1,4 +1,4 @@
 flask
-tensorflow-cpu
 numpy
 waitress
+scikit-learn

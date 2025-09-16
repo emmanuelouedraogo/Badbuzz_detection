@@ -18,12 +18,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Declare build arguments that will be passed from docker-compose
 ARG MODEL_URL
-ARG TOKENIZER_URL
+ARG VECTORIZER_URL
 
 # Create directory for the model and download files from the provided URLs
 RUN mkdir -p /app/saved_model
-RUN wget -O saved_model/best_gensim_bidirectional_gru_en_model.keras ${MODEL_URL}
-RUN wget -O tokenizer.pickle ${TOKENIZER_URL}
+RUN wget -O saved_model/best_model.pkl ${MODEL_URL}
+RUN wget -O best_vectorizer.pkl ${VECTORIZER_URL}
 
 
 # ---- Final Stage ----
@@ -42,7 +42,7 @@ USER appuser
 # Copy virtual env and models from builder stage
 COPY --chown=appuser:appuser --from=builder /opt/venv /opt/venv
 COPY --chown=appuser:appuser --from=builder /app/saved_model /app/saved_model
-COPY --chown=appuser:appuser --from=builder /app/tokenizer.pickle /app/tokenizer.pickle
+COPY --chown=appuser:appuser --from=builder /app/best_vectorizer.pkl /app/best_vectorizer.pkl
 
 # Copy the application's source code
 COPY --chown=appuser:appuser app.py .

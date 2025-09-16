@@ -16,7 +16,7 @@ jobs:
     # These must be set in your repository's secrets
     env:
       MODEL_URL: ${{ secrets.MODEL_URL }}
-      TOKENIZER_URL: ${{ secrets.TOKENIZER_URL }}
+      VECTORIZER_URL: ${{ secrets.VECTORIZER_URL }}
 
     steps:
     - name: Checkout code
@@ -37,8 +37,8 @@ jobs:
     - name: Download models for testing
       run: |
         mkdir -p saved_model
-        wget -O saved_model/best_gensim_bidirectional_gru_en_model.keras ${{ secrets.MODEL_URL }}
-        wget -O tokenizer.pickle ${{ secrets.TOKENIZER_URL }}
+        wget -O saved_model/best_model.pkl ${MODEL_URL}
+        wget -O best_vectorizer.pkl ${VECTORIZER_URL}
 
     - name: Lint and Format Check with Ruff
       run: |
@@ -95,7 +95,7 @@ jobs:
         push: true
         build-args: |
           MODEL_URL=${{ secrets.MODEL_URL }}
-          TOKENIZER_URL=${{ secrets.TOKENIZER_URL }}
+          VECTORIZER_URL=${{ secrets.VECTORIZER_URL }}
         tags: ${{ secrets.ACR_LOGIN_SERVER }}/badbuzz-api:latest,${{ secrets.ACR_LOGIN_SERVER }}/badbuzz-api:${{ github.sha }}
 
     - name: Build and push Frontend image

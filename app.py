@@ -8,8 +8,6 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 import logging
 from flask import Flask, request, jsonify
 import pickle
-from tensorflow.keras.preprocessing.sequence import pad_sequences
-from tensorflow.keras.saving import load_model
 
 # --- Configuration & Logging ---
 logging.basicConfig(
@@ -18,9 +16,8 @@ logging.basicConfig(
 
 # --- Constants ---
 # Path to the model and tokenizer
-MODEL_PATH = os.path.join("saved_model", "best_gensim_bidirectional_gru_en_model.keras")
-TOKENIZER_PATH = "tokenizer.pickle"
-MAX_SEQUENCE_LENGTH = 200  # IMPORTANT: Must be the same value used during training
+MODEL_PATH = os.path.join("saved_model", "best_model.pkl")
+VECTORIZER_PATH = "best_vectorizer.pkl"
 
 
 # --- Flask App Initialization ---
@@ -29,21 +26,22 @@ app = Flask(__name__)  # Create the Flask app instance
 
 # --- Global variables for lazy loading ---
 model = None
-tokenizer = None
+vectorizer = None
 
 
 def load_resources():
     """Load the model and tokenizer into global variables if they haven't been already."""
-    global model, tokenizer
+    global model, vectorizer
     if model is None:
-        logging.info("Lazy loading Keras model...")
-        model = load_model(MODEL_PATH)
+        logging.info("Lazy loading Scikit-learn model...")
+        with open(MODEL_PATH, "rb") as f:
+            model = pickle.load(f)
         logging.info("Model loaded.")
-    if tokenizer is None:
-        logging.info("Lazy loading tokenizer...")
-        with open(TOKENIZER_PATH, "rb") as handle:
-            tokenizer = pickle.load(handle)
-        logging.info("Tokenizer loaded.")
+    if vectorizer is None:
+        logging.info("Lazy loading TfidfVectorizer...")
+        with open(VECTORIZER_PATH, "rb") as f:
+            vectorizer = pickle.load(f)
+        logging.info("Vectorizer loaded.")
 
 
 @app.route("/", methods=["GET"])
@@ -76,22 +74,20 @@ def predict():
             return jsonify({"error": 'The "text" field is missing.'}), 400
 
         # Preprocess the text
-        sequences = tokenizer.texts_to_sequences([text])
-        processed_text = pad_sequences(sequences, maxlen=MAX_SEQUENCE_LENGTH)
+        processed_text = vectorizer.transform([text])
 
         # Prediction
-        prediction_score = model.predict(processed_text, verbose=0)[0][0]
+        # predict_proba returns [[P(neg), P(pos)]]. We use the score for the positive class.
+        prediction_proba = model.predict_proba(processed_text)[0]
+        positive_score = prediction_proba[1]
 
-        # Interpretation of the score (threshold at 0.5).
-        # Based on user feedback, the model's output convention is:
-        # A score close to 1 is NEGATIVE, and a score close to 0 is POSITIVE.
-        # Example: "Bad job" was getting a high score and being labeled "Positive".
-        label = "Negative" if prediction_score > 0.5 else "Positive"
+        # Interpretation of the score (threshold at 0.5)
+        label = "Positive" if positive_score > 0.5 else "Negative"
 
         # Create the response
-        response = {"prediction": label, "confidence_score": float(prediction_score)}
+        response = {"prediction": label, "confidence_score": float(positive_score)}
         logging.info(
-            f"Prediction for text '{text[:30]}...': {label} ({prediction_score:.4f})"
+            f"Prediction for text '{text[:30]}...': {label} ({positive_score:.4f})"
         )
         return jsonify(response)
 

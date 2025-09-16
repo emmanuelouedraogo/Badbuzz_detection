@@ -5,7 +5,7 @@ services:
       dockerfile: api.Dockerfile
       args:
         - MODEL_URL=${MODEL_URL}
-        - TOKENIZER_URL=${TOKENIZER_URL}
+        - VECTORIZER_URL=${VECTORIZER_URL}
     container_name: badbuzz_api
     ports:
       - "5000:5000"
