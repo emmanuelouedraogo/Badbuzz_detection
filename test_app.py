@@ -1,7 +1,8 @@
 import json
 import pytest
 import numpy as np
-from app import app as flask_app, load_resources  # Import the app and loader
+from unittest.mock import Mock
+from app import app as flask_app
 
 
 @pytest.fixture
@@ -14,10 +15,8 @@ def app():
 @pytest.fixture
 def client(app):
     """A test client for the app."""
-    # Eagerly load model and tokenizer for testing purposes to avoid errors
-    # with lazy loading in the test environment.
-    with app.app_context():
-        load_resources()
+    # We don't call load_resources() here anymore because our tests
+    # will mock the model and vectorizer directly.
     with app.test_client() as client:
         yield client
 
@@ -36,15 +35,30 @@ def test_root_endpoint(client):
     assert "message" in response.json
 
 
-def test_predict_positive(client, monkeypatch):
+@pytest.fixture
+def mock_positive_model(monkeypatch):
+    """Fixture to mock a model that predicts 'Positive'."""
+    mock_model = Mock()
+    mock_model.predict_proba.return_value = np.array(
+        [[0.1, 0.9]]
+    )  # High positive score
+    mock_vectorizer = Mock()
+    monkeypatch.setattr("app.model", mock_model)
+    monkeypatch.setattr("app.vectorizer", mock_vectorizer)
+
+
+@pytest.fixture
+def mock_negative_model(monkeypatch):
+    """Fixture to mock a model that predicts 'Negative'."""
+    mock_model = Mock()
+    mock_model.predict_proba.return_value = np.array([[0.9, 0.1]])  # Low positive score
+    mock_vectorizer = Mock()
+    monkeypatch.setattr("app.model", mock_model)
+    monkeypatch.setattr("app.vectorizer", mock_vectorizer)
+
+
+def test_predict_positive(client, mock_positive_model):
     """Test the /predict endpoint for a positive sentiment prediction."""
-
-    # Mock the model's predict_proba method to return a high positive score
-    def mock_predict_proba(*args, **kwargs):
-        return np.array([[0.1, 0.9]])  # [P(neg), P(pos)]
-
-    monkeypatch.setattr("app.model.predict_proba", mock_predict_proba)
-
     response = client.post(
         "/predict",
         data=json.dumps({"text": "This is great!"}),
@@ -56,15 +70,8 @@ def test_predict_positive(client, monkeypatch):
     assert data["prediction"] == "Positive"
 
 
-def test_predict_negative(client, monkeypatch):
+def test_predict_negative(client, mock_negative_model):
     """Test the /predict endpoint for a negative sentiment prediction."""
-
-    # Mock the model's predict_proba method to return a low positive score
-    def mock_predict_proba(*args, **kwargs):
-        return np.array([[0.9, 0.1]])  # [P(neg), P(pos)]
-
-    monkeypatch.setattr("app.model.predict_proba", mock_predict_proba)
-
     response = client.post(
         "/predict",
         data=json.dumps({"text": "This is awful."}),
@@ -78,9 +85,10 @@ def test_predict_negative(client, monkeypatch):
 
 def test_predict_no_text(client, monkeypatch):
     """Test the /predict endpoint when no text is provided."""
-    # Mock the vectorizer to avoid loading it for this simple validation test.
-    # The model won't be loaded if the text is empty.
-    monkeypatch.setattr("app.vectorizer", "mock_vectorizer")
+    # We only need to mock the vectorizer, as the model won't be called
+    # if the text is empty.
+    mock_vectorizer = Mock()
+    monkeypatch.setattr("app.vectorizer", mock_vectorizer)
     response = client.post("/predict", json={})
     assert response.status_code == 400
     assert response.json == {"error": 'The "text" field is missing.'}
