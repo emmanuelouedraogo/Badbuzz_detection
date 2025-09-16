@@ -45,8 +45,8 @@ USER appuser
 # Copy virtual env, application code, and models from builder stage
 COPY --chown=appuser:appuser --from=builder /opt/venv /opt/venv
 COPY --chown=appuser:appuser app.py .
-COPY --chown=appuser:appuser --from=builder /app/saved_model ./saved_model/
-COPY --chown=appuser:appuser --from=builder /app/best_vectorizer.pkl .
+COPY --chown=appuser:appuser --from=builder /app/saved_model ./saved_model
+COPY --chown=appuser:appuser --from=builder /app/best_vectorizer.pkl ./
 
 # Activate the virtual environment
 ENV PATH="/opt/venv/bin:$PATH"
