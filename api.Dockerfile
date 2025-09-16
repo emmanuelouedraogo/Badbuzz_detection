@@ -35,6 +35,9 @@ WORKDIR /app
 # Set TensorFlow log level to suppress INFO and WARNING messages (1=filter INFO, 2=filter WARNING, 3=filter ERROR)
 ENV TF_CPP_MIN_LOG_LEVEL=2
 
+# Install curl for the healthcheck command defined in docker-compose-azure.yml
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
 # Create a non-root user for security
 RUN useradd --create-home appuser
 USER appuser
