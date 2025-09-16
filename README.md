@@ -91,7 +91,7 @@ badbuzz_detection/
 ├── docker-compose.yml                 # Composition pour le développement local
 ├── frontend.Dockerfile                # Instructions pour construire l'image du frontend
 ├── README.md                          # Ce fichier
-├── requirements-dev.txt               # Dépendances pour le développement et les tests
+├── requirements-dev.txt               # Dépendances pour le développement
 ├── requirements.txt                   # Dépendances de production (API)
 ├── requirements-frontend.txt          # Dépendances de production (Frontend)
 ├── streamlit_app.py                   # Code source du frontend Streamlit
@@ -216,9 +216,9 @@ LOCATION="westeurope"
     ```
 
 3. **Créer le plan App Service :**
-    *(Note : Le plan `S1` (Standard) est requis pour utiliser les slots de déploiement. Le plan `B1` n'est pas suffisant.)*
+    *(Note : Le plan `S2` (Standard) est recommandé pour fournir suffisamment de mémoire à TensorFlow. Les plans inférieurs peuvent entraîner des plantages.)*
     ```bash
-    az appservice plan create --name $APP_SERVICE_PLAN --resource-group $RESOURCE_GROUP --sku S1 --is-linux
+    az appservice plan create --name $APP_SERVICE_PLAN --resource-group $RESOURCE_GROUP --sku S2 --is-linux
     ```
 
 4. **Créer l'application web :**
