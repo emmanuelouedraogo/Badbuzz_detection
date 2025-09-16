@@ -1,7 +1,6 @@
 flask
-tensorflow-cpu
+tensorflow-cpu-aws
 numpy
 gensim
-gunicorn
-gevent
+waitress
 python-dotenv

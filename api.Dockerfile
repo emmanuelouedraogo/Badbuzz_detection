@@ -54,4 +54,4 @@ ENV PATH="/opt/venv/bin:$PATH"
 EXPOSE 5000
 
 # Run the application using Gunicorn (production server)
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--worker-class", "gevent", "--workers", "1", "--timeout", "600", "app:app"]
+CMD ["waitress-serve", "--host=0.0.0.0", "--port=5000", "app:app"]
