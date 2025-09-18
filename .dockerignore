@@ -2,10 +2,8 @@
 .git
 .gitignore
 
-# Docker files
-Dockerfile
-*.Dockerfile
-docker-compose.yml
+# Fichiers de composition Docker (non nécessaires dans l'image)
+docker-compose*.yml
 .dockerignore
 
 # Python virtual environment
