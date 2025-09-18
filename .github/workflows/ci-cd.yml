@@ -103,6 +103,14 @@ jobs:
         push: true
         tags: ${{ secrets.ACR_LOGIN_SERVER }}/badbuzz-frontend:latest,${{ secrets.ACR_LOGIN_SERVER }}/badbuzz-frontend:${{ github.sha }}
 
+    - name: Build and push Nginx image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./nginx.Dockerfile
+        push: true
+        tags: ${{ secrets.ACR_LOGIN_SERVER }}/badbuzz-nginx:latest,${{ secrets.ACR_LOGIN_SERVER }}/badbuzz-nginx:${{ github.sha }}
+
   deploy-to-staging:
     name: Deploy to Staging
     runs-on: ubuntu-latest

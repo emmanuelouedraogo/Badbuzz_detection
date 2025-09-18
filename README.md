@@ -254,7 +254,7 @@ LOCATION="westeurope"
         --settings DOCKER_REGISTRY_SERVER_URL="$ACR_URL" \
                    DOCKER_REGISTRY_SERVER_USERNAME="$ACR_USER" \
                    DOCKER_REGISTRY_SERVER_PASSWORD="$ACR_PASSWORD" \
-                   PIPELINE_URL="${{ secrets.PIPELINE_URL }}" \
+                   API_URL="https://$WEBAPP_NAME.azurewebsites.net/api/predict" \
                    WEBSITES_PORT=80
     ```
 
@@ -268,13 +268,6 @@ LOCATION="westeurope"
 
     ```bash
     az webapp config set --name $WEBAPP_NAME --resource-group $RESOURCE_GROUP --http20-enabled true
-    ```
-
-10. **(Important) Configurer le Health Check pour la stabilité des déploiements :**
-    *(Cette étape est cruciale pour que les déploiements multi-conteneurs réussissent, en particulier lors des "swaps".)*
-
-    ```bash
-    az webapp config set --name $WEBAPP_NAME --resource-group $RESOURCE_GROUP --generic-configurations '{"healthCheckPath": "/"}'
     ```
 
 11. **(Crucial) Augmenter le temps de démarrage des conteneurs sur les slots :**
