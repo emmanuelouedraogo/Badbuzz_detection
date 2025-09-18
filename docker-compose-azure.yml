@@ -25,5 +25,5 @@ services:
     depends_on:
       api:
         condition: service_healthy
-    # La variable API_URL est maintenant définie dans les "Paramètres d'application"
+    # La variable API_URL doit maintenant être définie dans les "Paramètres d'application"
     # d'Azure pour pointer vers l'URL publique, ex: https://<app-name>.azurewebsites.net/api/predict

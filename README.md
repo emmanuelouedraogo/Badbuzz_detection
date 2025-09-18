@@ -16,6 +16,15 @@ Une application web complète pour l'analyse de sentiments, capable de classifie
 
 ---
 
+## 🌐 Accès à l'application
+
+Une fois le déploiement réussi sur Azure, l'application et l'API sont accessibles via les liens suivants :
+
+- **Application Frontend (Streamlit)** : [https://badbuzz-webapp.azurewebsites.net](https://badbuzz-webapp.azurewebsites.net)
+- **API Endpoint (Exemple)** : [https://badbuzz-webapp.azurewebsites.net/api/predict](https://badbuzz-webapp.azurewebsites.net/api/predict)
+
+---
+
 ### Table des matières
 
 - [🎯 À propos du projet](#-à-propos-du-projet)
