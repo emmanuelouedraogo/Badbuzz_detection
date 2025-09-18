@@ -248,6 +248,7 @@ LOCATION="westeurope"
         --multicontainer-config-type compose \
         --multicontainer-config-file docker-compose-azure.yml
     ```
+    > **Note :** Après avoir exécuté la commande `container set`, Azure commence à reconfigurer l'App Service en arrière-plan. Attendez une minute ou deux avant de passer à l'étape suivante pour éviter une erreur de type `Conflict`.
 
 7. **Configurer la connexion à l'ACR :**
     *(Cette commande définit le mot de passe pour que l'App Service puisse télécharger les images)*
@@ -259,12 +260,8 @@ LOCATION="westeurope"
 
     # Configurer l'App Service avec ces variables
     az webapp config appsettings set --name $WEBAPP_NAME \
-        --resource-group $RESOURCE_GROUP \
-        --settings DOCKER_REGISTRY_SERVER_URL="$ACR_URL" \
-                   DOCKER_REGISTRY_SERVER_USERNAME="$ACR_USER" \
-                   DOCKER_REGISTRY_SERVER_PASSWORD="$ACR_PASSWORD" \
-                   API_URL="https://$WEBAPP_NAME.azurewebsites.net/api/predict" \
-                   WEBSITES_PORT=80
+      --resource-group $RESOURCE_GROUP \
+      --settings DOCKER_REGISTRY_SERVER_URL="$ACR_URL" DOCKER_REGISTRY_SERVER_USERNAME="$ACR_USER" DOCKER_REGISTRY_SERVER_PASSWORD="$ACR_PASSWORD" API_URL="https://$WEBAPP_NAME.azurewebsites.net/api/predict" WEBSITES_PORT=80
     ```
 
 8. **Activer le déploiement continu (CD) :**

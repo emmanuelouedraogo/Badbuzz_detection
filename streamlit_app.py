@@ -32,10 +32,13 @@ st.markdown(
 )
 
 # --- API Configuration ---
-# The URL for the Flask API is loaded from an environment variable.
-# For local development, it's set in the .env file.
-# For Docker, it will be set in docker-compose.yml.
-API_URL = os.getenv("API_URL", "http://api:5000/predict")
+# L'URL de l'API est chargée depuis une variable d'environnement.
+# Si la variable est absente, vide ou invalide, une valeur par défaut robuste est utilisée.
+# Cela garantit que l'application peut toujours communiquer en interne (via Nginx)
+# ou en local (via le nom du service Docker).
+API_URL = os.getenv("API_URL")
+if not API_URL or "localhost" in API_URL:
+    API_URL = "http://api:5000/predict"
 
 
 # --- Functions ---
