@@ -35,3 +35,11 @@ tests/
 # OS-generated files
 .DS_Store
 Thumbs.db
+
+# Jupyter Notebook
+###################
+*.ipynb
+
+# Python
+###################
+verif.py

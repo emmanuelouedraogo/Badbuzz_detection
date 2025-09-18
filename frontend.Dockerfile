@@ -1,39 +1,47 @@
-# ---- Builder Stage ----
-# This stage installs dependencies into a virtual environment
-FROM python:3.12-slim as builder
+# --- Stage 1: Builder ---
+# Cette étape installe les dépendances Python dans un environnement temporaire.
+FROM python:3.12-slim AS builder
 
 WORKDIR /app
 
-# Create a virtual environment
-ENV VIRTUAL_ENV=/opt/venv
-RUN python -m venv $VIRTUAL_ENV
-ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+# Mettre à jour pip
+RUN pip install --upgrade pip
 
-# Install the lightweight dependencies for the frontend
+# Copier uniquement le fichier des dépendances pour profiter du cache Docker.
 COPY requirements-frontend.txt .
+
+# Installer les dépendances en désactivant le cache pour réduire la taille de la couche.
 RUN pip install --no-cache-dir -r requirements-frontend.txt
 
 
-# ---- Final Stage ----
-# This stage creates the final, smaller image
+# --- Stage 2: Final Image ---
+# Cette étape construit l'image de production finale, légère et sécurisée.
 FROM python:3.12-slim
 
-# Set the working directory in the container
+# Créer un utilisateur et un groupe non-root pour l'application
+# L'option -m crée le répertoire personnel de l'utilisateur (/home/appuser),
+# ce qui est essentiel pour que les applications puissent y écrire des fichiers de configuration.
+RUN groupadd -r appgroup && useradd -r -m -g appgroup -s /bin/bash appuser
+
 WORKDIR /app
 
-# Create a non-root user for security
-RUN useradd --create-home appuser
-USER appuser
+# Copier les paquets Python installés depuis l'étape "builder".
+COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
 
-# Copy virtual env and application code from builder stage
-COPY --from=builder /opt/venv /opt/venv
+# Copier les exécutables (comme 'streamlit') depuis l'étape de build.
+COPY --from=builder /usr/local/bin /usr/local/bin
+
+# Copier le code de l'application
 COPY streamlit_app.py .
 
-# Activate the virtual environment
-ENV PATH="/opt/venv/bin:$PATH"
+# Donner la propriété du répertoire à notre utilisateur non-root
+RUN chown -R appuser:appgroup /app
 
-# Make port 8501 available
+# Changer d'utilisateur pour ne pas exécuter en tant que root
+USER appuser
+
+# Exposer le port sur lequel l'application écoute
 EXPOSE 8501
 
-# Run the Streamlit app
+# Commande pour démarrer le serveur Streamlit
 CMD ["streamlit", "run", "streamlit_app.py", "--server.port=8501", "--server.address=0.0.0.0"]

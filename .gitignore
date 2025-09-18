@@ -1,10 +1,10 @@
-git # Python
+ # Python
 ###################
 # Byte-compiled / optimized / C extensions
 __pycache__/
 *.py[cod]
 *$py.class
-
+verif.py
 # C extensions
 *.so
 
@@ -15,12 +15,15 @@ build/
 
 # Virtual Environments
 ###################
-badbuzzenv
+badbuzzenv/
 venv/
 env/
 .venv/
 .env/
-.env.*.local
+
+# Environment variables
+.env
+.env.*
 
 # IDE & Editor Config
 ###################
@@ -41,8 +44,15 @@ Thumbs.db
 .pytest_cache/
 htmlcov/
 coverage.xml
-.coverage
+.coverage*
 
-# modèle
-saved_model/best_gensim_bidirectional_gru_en_model.keras
-tokenizer.pickle
+# Modèles et artefacts
+###################
+*.joblib
+*.pickle
+*.keras
+saved_model/
+
+# Jupyter Notebook
+###################
+*.ipynb

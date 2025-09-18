@@ -37,32 +37,29 @@ def test_root_endpoint(client):
 
 @pytest.fixture
 def mock_positive_model(monkeypatch):
-    """Fixture to mock a model that predicts 'Positive'."""
-    mock_model = Mock()
-    mock_model.predict_proba.return_value = np.array(
+    """Fixture pour simuler un pipeline qui prédit 'Positif'."""
+    mock_pipeline = Mock()
+    mock_pipeline.predict_proba.return_value = np.array(
         [[0.1, 0.9]]
-    )  # High positive score
-    mock_vectorizer = Mock()
-    monkeypatch.setattr("app.model", mock_model)
-    monkeypatch.setattr("app.vectorizer", mock_vectorizer)
+    )  # Score positif élevé
+    monkeypatch.setattr("app.pipeline", mock_pipeline)
 
 
 @pytest.fixture
 def mock_negative_model(monkeypatch):
-    """Fixture to mock a model that predicts 'Negative'."""
-    mock_model = Mock()
-    mock_model.predict_proba.return_value = np.array([[0.9, 0.1]])  # Low positive score
-    mock_vectorizer = Mock()
-    monkeypatch.setattr("app.model", mock_model)
-    monkeypatch.setattr("app.vectorizer", mock_vectorizer)
+    """Fixture pour simuler un pipeline qui prédit 'Négatif'."""
+    mock_pipeline = Mock()
+    mock_pipeline.predict_proba.return_value = np.array(
+        [[0.9, 0.1]]
+    )  # Score positif bas
+    monkeypatch.setattr("app.pipeline", mock_pipeline)
 
 
 def test_predict_positive(client, mock_positive_model):
     """Test the /predict endpoint for a positive sentiment prediction."""
     response = client.post(
         "/predict",
-        data=json.dumps({"text": "This is great!"}),
-        content_type="application/json",
+        json={"text": "This is great!"},
     )
     data = response.get_json()
 
@@ -74,8 +71,7 @@ def test_predict_negative(client, mock_negative_model):
     """Test the /predict endpoint for a negative sentiment prediction."""
     response = client.post(
         "/predict",
-        data=json.dumps({"text": "This is awful."}),
-        content_type="application/json",
+        json={"text": "This is awful."},
     )
     data = response.get_json()
 
@@ -83,12 +79,9 @@ def test_predict_negative(client, mock_negative_model):
     assert data["prediction"] == "Negative"
 
 
-def test_predict_no_text(client, monkeypatch):
+def test_predict_no_text(client):
     """Test the /predict endpoint when no text is provided."""
-    # We only need to mock the vectorizer, as the model won't be called
-    # if the text is empty.
-    mock_vectorizer = Mock()
-    monkeypatch.setattr("app.vectorizer", mock_vectorizer)
+    # Pas besoin de mock, la validation se fait avant l'appel au pipeline.
     response = client.post("/predict", json={})
     assert response.status_code == 400
-    assert response.json == {"error": 'The "text" field is missing.'}
+    assert response.json == {"error": "Le champ 'text' est manquant."}

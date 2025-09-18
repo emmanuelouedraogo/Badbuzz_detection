@@ -7,7 +7,7 @@
   <img src="https://img.shields.io/github/license/emmanuelouedraogo/badbuzz-detection?style=for-the-badge" alt="License">
 </p>
 
-Une application web complète pour l'analyse de sentiments, capable de classifier un texte en **Positif** ou **Négatif** à l'aide d'un modèle de Deep Learning. Ce projet est entièrement conteneurisé avec Docker et déployé automatiquement sur Azure via un pipeline CI/CD avec GitHub Actions.
+Une application web complète pour l'analyse de sentiments, capable de classifier un texte en **Positif** ou **Négatif** à l'aide d'un modèle de Machine Learning. Ce projet est entièrement conteneurisé avec Docker et déployé automatiquement sur Azure via un pipeline CI/CD avec GitHub Actions.
 
 <p align="center">
   <!-- Remplacer par une capture d'écran ou un GIF de l'application -->
@@ -35,7 +35,7 @@ Une application web complète pour l'analyse de sentiments, capable de classifie
 
 Ce projet met en œuvre une solution de détection de "bad buzz" en analysant le sentiment de textes fournis par l'utilisateur. Il est composé de deux services principaux :
 
-1. **Une API backend (Flask)** : Elle expose un modèle de Deep Learning (un GRU bidirectionnel) entraîné pour la classification de texte. L'API reçoit un texte et retourne une prédiction (Positif/Négatif) ainsi qu'un score de confiance.
+1. **Une API backend (Flask)** : Elle expose un modèle de Machine Learning (une Régression Logistique avec vectorisation TF-IDF) entraîné pour la classification de texte. L'API reçoit un texte et retourne une prédiction (Positif/Négatif) ainsi qu'un score de confiance.
 2. **Une interface frontend (Streamlit)** : Une application web simple et interactive qui permet aux utilisateurs de saisir du texte et de visualiser instantanément le résultat de l'analyse de sentiment.
 
 L'ensemble du projet est conçu pour être robuste, scalable et facilement déployable grâce à la conteneurisation Docker et à un pipeline d'intégration et de déploiement continus (CI/CD).
@@ -43,10 +43,10 @@ L'ensemble du projet est conçu pour être robuste, scalable et facilement dépl
 ## 🛠️ Stack Technologique
 
 | Catégorie           | Technologies                                                              |
-| ------------------- | ------------------------------------------------------------------------- |
-| **Backend**         | <img src="https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=white"> <img src="https://img.shields.io/badge/Flask-000000?logo=flask&logoColor=white"> <img src="https://img.shields.io/badge/Gunicorn-499848?logo=gunicorn&logoColor=white"> |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Backend**         | <img src="https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=white"> <img src="https://img.shields.io/badge/Flask-000000?logo=flask&logoColor=white"> <img src="https://img.shields.io/badge/Waitress-A9A9A9?logo=python&logoColor=white"> |
 | **Frontend**        | <img src="https://img.shields.io/badge/Streamlit-FF4B4B?logo=streamlit&logoColor=white">                                                              |
-| **Machine Learning**| <img src="https://img.shields.io/badge/TensorFlow-FF6F00?logo=tensorflow&logoColor=white"> <img src="https://img.shields.io/badge/Keras-D00000?logo=keras&logoColor=white"> |
+| **Machine Learning**| <img src="https://img.shields.io/badge/Scikit--learn-F7931E?logo=scikit-learn&logoColor=white"> |
 | **Conteneurisation**| <img src="https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white">                                                                  |
 | **CI/CD & Cloud**   | <img src="https://img.shields.io/badge/GitHub_Actions-2088FF?logo=github-actions&logoColor=white"> <img src="https://img.shields.io/badge/Microsoft_Azure-0078D4?logo=microsoft-azure&logoColor=white"> |
 
@@ -118,13 +118,11 @@ Suivez ces étapes pour lancer le projet sur votre machine en utilisant Docker.
     ```
 
 2. **Configurer les variables d'environnement :**
-    Créez un fichier `.env` à la racine du projet en vous basant sur le fichier `.env.example` (s'il existe) ou en copiant le contenu ci-dessous. Les URLs sont déjà pré-remplies.
+    Créez un fichier `.env` à la racine du projet avec l'URL de votre modèle. Le script de démarrage local l'utilisera pour télécharger le fichier `pipeline.joblib`.
 
     ```shell
     # .env
-    MODEL_URL="https://github.com/emmanuelouedraogo/badbuzz-detection/releases/download/v1.0.0/best_gensim_bidirectional_gru_en_model.keras"
-    TOKENIZER_URL="https://github.com/emmanuelouedraogo/badbuzz-detection/releases/download/v1.0.0/tokenizer.pickle"
-    API_URL="http://127.0.0.1:5000/predict"
+    PIPELINE_URL=https://github.com/emmanuelouedraogo/badbuzz-detection/releases/download/v1.0.0/pipeline.joblib
     ```
 
 3. **Lancer avec Docker Compose :**
@@ -155,8 +153,7 @@ Allez dans les paramètres de votre dépôt GitHub (`Settings > Secrets and vari
 - `ACR_LOGIN_SERVER` : L'URL de votre Azure Container Registry (ex: `monacr.azurecr.io`).
 - `ACR_USERNAME` : Le nom d'utilisateur pour se connecter à l'ACR.
 - `ACR_PASSWORD` : Le mot de passe pour se connecter à l'ACR.
-- `MODEL_URL` : L'URL de téléchargement de votre modèle `.keras`.
-- `TOKENIZER_URL` : L'URL de téléchargement de votre tokenizer `.pickle`.
+- `PIPELINE_URL` : L'URL de téléchargement de votre pipeline (`pipeline.joblib`).
 - `AZURE_CREDENTIALS` : Le JSON d'authentification pour le principal de service.
 
 #### Récupération des valeurs pour les secrets
@@ -256,7 +253,9 @@ LOCATION="westeurope"
         --resource-group $RESOURCE_GROUP \
         --settings DOCKER_REGISTRY_SERVER_URL="$ACR_URL" \
                    DOCKER_REGISTRY_SERVER_USERNAME="$ACR_USER" \
-                   DOCKER_REGISTRY_SERVER_PASSWORD="$ACR_PASSWORD"
+                   DOCKER_REGISTRY_SERVER_PASSWORD="$ACR_PASSWORD" \
+                   PIPELINE_URL="${{ secrets.PIPELINE_URL }}" \
+                   WEBSITES_PORT=80
     ```
 
 8. **Activer le déploiement continu (CD) :**

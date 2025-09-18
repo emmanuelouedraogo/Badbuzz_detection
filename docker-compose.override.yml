@@ -1,0 +1,17 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: api.dev.Dockerfile
+    volumes:
+      # Monte le répertoire local dans le conteneur.
+      # Les changements dans `app.py` seront immédiatement disponibles.
+      - .:/app
+    env_file:
+      - .env
+    command: ["/bin/sh", "-c", "wget -nc -O pipeline.joblib $$PIPELINE_URL && python -u app.py"]
+
+  frontend:
+    volumes:
+      # Monte le répertoire local pour que Streamlit détecte les changements dans `streamlit_app.py`.
+      - .:/app

@@ -1,4 +1,6 @@
-flask
-numpy
-waitress
-scikit-learn
+flask==2.3.3
+joblib==1.4.2
+numpy==1.26.2
+pandas==2.1.3
+scikit-learn==1.5.0
+waitress==3.0.1

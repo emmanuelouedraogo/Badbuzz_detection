@@ -52,7 +52,7 @@ if "text_input" not in st.session_state:
 st.title("Advanced Sentiment Analysis AI 🧠✨")
 st.markdown(
     "An AI-powered tool to analyze the sentiment of any text. "
-    "Powered by a Bidirectional GRU model, this app classifies text as **Positive** or **Negative**."
+    "This app classifies text as **Positive** or **Negative**."
 )
 st.divider()
 
@@ -99,10 +99,10 @@ if st.button("Analyze Sentiment", type="primary", use_container_width=True):
                 prediction = result.get("prediction")
                 raw_score = result.get("confidence_score")
 
-                # The API returns a score where > 0.5 is Negative.
-                # We calculate the confidence in the *predicted label*.
+                # L'API retourne le score de la classe "Positive".
+                # Nous calculons la confiance dans le label prédit.
                 display_confidence = (
-                    raw_score if prediction == "Negative" else 1 - raw_score
+                    raw_score if prediction == "Positive" else 1 - raw_score
                 )
 
                 st.divider()
@@ -131,7 +131,7 @@ if st.button("Analyze Sentiment", type="primary", use_container_width=True):
 
                 with st.expander("Show Technical Details"):
                     st.write(f"Raw model score: `{raw_score:.4f}`")
-                    st.write("_Model convention: score > 0.5 is Negative._")
+                    st.write("_Model convention: score > 0.5 is Positive._")
                     st.json(result)
             else:
                 st.error(

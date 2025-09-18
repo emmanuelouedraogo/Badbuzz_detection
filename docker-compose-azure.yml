@@ -1,23 +1,21 @@
-version: '3.8'
-services:
-  frontend:
-    image: badbuzzacr.azurecr.io/badbuzz-frontend:latest
-    environment:
-      - API_URL=http://localhost:5000/predict
-      - WEBSITES_PORT=8501
-    ports:
-      - "8501:8501"
+# Ce fichier est utilisé par Azure App Service pour un déploiement multi-conteneurs.
+# Il suppose que les images Docker ont déjà été construites et poussées
+# vers un Azure Container Registry (ACR).
 
+services:
   api:
-    image: badbuzzacr.azurecr.io/badbuzz-api:latest
-    environment:
-      - LOG_LEVEL=INFO
-      - WEBSITES_CONTAINER_START_TIME_LIMIT=600
+    # Remplacez <your-acr-name> par le nom de votre ACR.
+    # Azure remplacera dynamiquement cette valeur si vous configurez le webhook.
+    # L'image 'latest' sera utilisée.
+    image: ${{ secrets.ACR_LOGIN_SERVER }}/badbuzz-api:latest
+    restart: unless-stopped
+    # Les variables d'environnement comme PIPELINE_URL sont définies
+    # dans les "Paramètres d'application" de l'App Service sur Azure.
+
+  frontend:
+    image: ${{ secrets.ACR_LOGIN_SERVER }}/badbuzz-frontend:latest
+    restart: unless-stopped
     ports:
-      - "5000:5000"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 120s
+      # Mappe le port 8501 du conteneur au port 80 de l'App Service.
+      # Azure redirigera automatiquement le trafic externe vers ce service.
+      - "80:8501"

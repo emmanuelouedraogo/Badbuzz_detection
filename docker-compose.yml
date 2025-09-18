@@ -3,15 +3,17 @@ services:
     build:
       context: .
       dockerfile: api.Dockerfile
-      args:
-        - MODEL_URL=${MODEL_URL}
-        - VECTORIZER_URL=${VECTORIZER_URL}
     container_name: badbuzz_api
     ports:
       - "5000:5000"
     restart: unless-stopped
-    env_file:
-      - .env
+    healthcheck:
+      # Commande pour vérifier si l'API est prête à recevoir des requêtes.
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
 
   frontend:
     build:
@@ -21,8 +23,9 @@ services:
     container_name: badbuzz_frontend
     ports:
       - "8501:8501"
-    depends_on:
-      - api
+    depends_on: # Attend que le service 'api' soit "healthy" avant de démarrer.
+      api:
+        condition: service_healthy
     restart: unless-stopped
     environment:
       - API_URL=http://api:5000/predict

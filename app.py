@@ -7,7 +7,7 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
 import logging
 from flask import Flask, request, jsonify
-import pickle
+import joblib  # Utiliser joblib pour charger le pipeline scikit-learn
 
 # --- Configuration & Logging ---
 logging.basicConfig(
@@ -15,33 +15,54 @@ logging.basicConfig(
 )
 
 # --- Constants ---
-# Path to the model and tokenizer
-MODEL_PATH = os.path.join("saved_model", "best_model.pkl")
-VECTORIZER_PATH = "best_vectorizer.pkl"
+# Chemin vers le pipeline sauvegardé
+PIPELINE_PATH = "pipeline.joblib"
 
 
 # --- Flask App Initialization ---
 app = Flask(__name__)  # Create the Flask app instance
 
 
-# --- Global variables for lazy loading ---
-model = None
-vectorizer = None
+# --- Global variables for model and vectorizer ---
+pipeline = None
 
 
-def load_resources():
-    """Load the model and tokenizer into global variables if they haven't been already."""
-    global model, vectorizer
-    if model is None:
-        logging.info("Lazy loading Scikit-learn model...")
-        with open(MODEL_PATH, "rb") as f:
-            model = pickle.load(f)
-        logging.info("Model loaded.")
-    if vectorizer is None:
-        logging.info("Lazy loading TfidfVectorizer...")
-        with open(VECTORIZER_PATH, "rb") as f:
-            vectorizer = pickle.load(f)
-        logging.info("Vectorizer loaded.")
+def load_pipeline():
+    """Charge le pipeline Scikit-learn depuis le disque."""
+    global pipeline
+    try:
+        logging.info("Chargement du pipeline Scikit-learn...")
+        pipeline = joblib.load(PIPELINE_PATH)
+        logging.info("Pipeline chargé avec succès.")
+
+        # Add type checks to ensure the loaded objects are correct
+        if not hasattr(pipeline, "predict_proba"):
+            raise TypeError(
+                "L'objet 'pipeline' chargé n'est pas un pipeline Scikit-learn valide."
+            )
+    except Exception as e:
+        logging.error(f"Erreur lors du chargement du pipeline : {e}")
+        raise
+
+
+# --- Load resources and perform a warm-up at startup ---
+if not app.config.get("TESTING"):
+    try:
+        load_pipeline()
+        logging.info("Exécution d'une prédiction de chauffe...")
+        warmup_text = "Ceci est un texte de test."
+        if not hasattr(pipeline, "predict_proba"):
+            raise TypeError(
+                "L'objet Pipeline est invalide et n'a pas de méthode 'predict_proba'."
+            )
+        # Le pipeline gère la vectorisation et la prédiction
+        pipeline.predict_proba([warmup_text])
+        logging.info("Prédiction de chauffe réussie. L'API est prête.")
+    except Exception as e:
+        logging.critical(
+            f"Le démarrage de l'application a échoué pendant la chauffe : {e}"
+        )
+        raise
 
 
 @app.route("/", methods=["GET"])
@@ -53,50 +74,45 @@ def index():
 @app.route("/health", methods=["GET"])
 def health_check():
     """Health check endpoint to confirm the service is running."""
-    # This endpoint should be lightweight and only confirm that the server process is alive.
-    # The actual model loading is handled lazily by the /predict endpoint.
-    # A failed health check here would mean the web server (e.g., Waitress) is down.
     return jsonify({"status": "ok"}), 200
 
 
 @app.route("/predict", methods=["POST"])
 def predict():
-    """Endpoint for sentiment prediction."""
-    # Lazy load resources on the first request
-    load_resources()
-
+    """
+    Analyse le sentiment du texte fourni en utilisant le pipeline chargé.
+    """
     try:
         data = request.get_json(force=True)
         text = data.get("text", "")
 
         if not text:
-            logging.warning("Prediction request received with no 'text' field.")
-            return jsonify({"error": 'The "text" field is missing.'}), 400
+            logging.warning("Requête de prédiction reçue sans champ 'text'.")
+            return jsonify({"error": "Le champ 'text' est manquant."}), 400
 
-        # Preprocess the text
-        processed_text = vectorizer.transform([text])
+        # Le pipeline gère à la fois le pré-traitement (TF-IDF) et la prédiction
+        prediction_proba = pipeline.predict_proba([text])[0]
 
-        # Prediction
-        # predict_proba returns [[P(neg), P(pos)]]. We use the score for the positive class.
-        prediction_proba = model.predict_proba(processed_text)[0]
+        # Le modèle a été entraîné avec 0=Négatif, 1=Positif.
+        # predict_proba renvoie [[P(neg), P(pos)]].
         positive_score = prediction_proba[1]
 
-        # Interpretation of the score (threshold at 0.5)
+        # Interprétation du score (seuil à 0.5)
         label = "Positive" if positive_score > 0.5 else "Negative"
 
-        # Create the response
-        response = {"prediction": label, "confidence_score": float(positive_score)}
+        # Création de la réponse
         logging.info(
-            f"Prediction for text '{text[:30]}...': {label} ({positive_score:.4f})"
+            f"Prédiction pour le texte '{text[:30]}...': {label} (score: {positive_score:.4f})"
         )
-        return jsonify(response)
+        return jsonify({"prediction": label, "confidence_score": float(positive_score)})
 
-    except Exception:
-        logging.exception("An error occurred during prediction.")
-        return jsonify({"error": "An internal server error occurred."}), 500
+    except Exception as e:
+        logging.exception(f"Une erreur est survenue pendant la prédiction : {e}")
+        return jsonify({"error": "Une erreur interne est survenue."}), 500
 
 
 if __name__ == "__main__":
-    # For development, debug=True is fine. For production, use a WSGI server.
-    # Example with Waitress: waitress-serve --host 0.0.0.0 --port 5000 app:app
-    app.run(host="0.0.0.0", port=5000, debug=False)
+    # Utiliser le serveur de production Waitress pour la stabilité.
+    from waitress import serve
+
+    serve(app, host="0.0.0.0", port=5000)
