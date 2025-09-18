@@ -3,16 +3,26 @@
 # vers un Azure Container Registry (ACR).
 
 services:
+  nginx:
+    image: ${{ secrets.ACR_LOGIN_SERVER }}/badbuzz-nginx:${{ github.sha }}
+    restart: unless-stopped
+    ports:
+      # Seul Nginx est exposé à l'extérieur sur le port 80.
+      - "80:80"
+    depends_on:
+      api:
+        condition: service_healthy
+      frontend:
+        condition: service_started
+
   api:
-    # Remplacez <your-acr-name> par le nom de votre ACR.
-    # Azure remplacera dynamiquement cette valeur si vous configurez le webhook.
-    # L'image 'latest' sera utilisée.
     image: ${{ secrets.ACR_LOGIN_SERVER }}/badbuzz-api:${{ github.sha }}
     restart: unless-stopped
     # Les variables d'environnement comme PIPELINE_URL sont définies
     # dans les "Paramètres d'application" de l'App Service sur Azure.
     healthcheck:
       # Vérifie si l'API est saine en interrogeant le endpoint /health.
+      # C'est le seul health check nécessaire.
       test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
       interval: 30s
       timeout: 10s
@@ -21,9 +31,9 @@ services:
 
   frontend:
     image: ${{ secrets.ACR_LOGIN_SERVER }}/badbuzz-frontend:${{ github.sha }}
-    restart: unless-stopped    
+    restart: unless-stopped
     depends_on:
       api:
         condition: service_healthy
-    # La variable API_URL doit maintenant être définie dans les "Paramètres d'application"
-    # d'Azure pour pointer vers l'URL publique, ex: https://<app-name>.azurewebsites.net/api/predict
+    # La variable API_URL est définie dans les "Paramètres d'application" d'Azure
+    # pour pointer vers l'URL publique : https://<app-name>.azurewebsites.net/api/predict
